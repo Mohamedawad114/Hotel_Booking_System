@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model user {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  password    String
+  username    String
+  name        String
+  customer_id String   @unique
+  city        String
+  street      String
+  phone String
+  photo       String?
+  isConfirmed  Boolean  @default(false)
+  role        Role?    @default(User)
+  date_birth  DateTime
+  createdAt   DateTime @default(now())
+
+  reviews   review[]
+  payments  payment[]
+  bookings  booking[]
+  favorites Favorite[]
+}
+
+model review {
+  id        Int      @id @default(autoincrement())
+  user      user     @relation(fields: [user_id], references: [id])
+  user_id   Int
+  hotel_id  Int
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+}
+
+model payment {
+  id         Int           @id @default(autoincrement())
+  user       user          @relation(fields: [user_id], references: [id])
+  user_id    Int
+  amount     Float
+  payment_id String        @unique
+  paidAt     DateTime?
+  status     paymentStatus @default(pending)
+  booking    booking       @relation(fields: [booking_id], references: [id])
+  booking_id Int @unique
+  createdAt  DateTime      @default(now())
+}
+
+model booking {
+  id             Int           @id @default(autoincrement())
+  user           user          @relation(fields: [user_id], references: [id])
+  user_id        Int
+  hotel_id       String
+  room_id        Int
+  booking_status BookingStatus @default(PENDING)
+  check_in       DateTime
+  check_out      DateTime
+  createdAt      DateTime      @default(now())
+  payment        payment?
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  user      user     @relation(fields: [userId], references: [id])
+  userId    Int
+  hotelId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, hotelId])
+}
+
+// enums
+enum Role {
+  Admin
+  User
+  SuperAdmin
+}
+
+enum paymentStatus {
+  pending
+  completed
+  failed
+  canceled
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
