@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/common/prisma/prisma.service';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export abstract class BaseRepository<
@@ -26,6 +27,9 @@ export abstract class BaseRepository<
   async updateOne(filter: any, data: UpdateDto, options?: any) {
     return await this.model.update({ where: filter, data, ...options });
   }
+  async updateMany(filter: any, data: UpdateDto) {
+    return await this.model.updateMany({ where: filter, data });
+  }
   async create(data: CreateDto) {
     return await this.model.create({ data });
   }
@@ -35,17 +39,14 @@ export abstract class BaseRepository<
   async deleteMany(filter: any) {
     return await this.model.deleteMany({ where: filter });
   }
-  async updateMany(filter: any, data: UpdateDto) {
-    return await this.model.updateMany({ where: filter, data });
-  }
   async count(filter: any) {
     return await this.model.count({ where: filter });
   }
   async transaction<T>(
     callback: (tx: PrismaService) => Promise<T>,
   ): Promise<T> {
-    return this.prisma.$transaction(async (tx: PrismaService) => {
-      return await callback(tx);
+    return this.prisma.$transaction(async (tx) => {
+      return await callback(tx as any);
     });
   }
 }

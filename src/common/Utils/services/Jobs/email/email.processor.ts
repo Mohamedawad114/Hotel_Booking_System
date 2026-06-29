@@ -2,7 +2,7 @@ import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import { EmailServices } from '../../mailService/mail.service';
-import { emailType } from 'src/common/Enum';
+import { emailType } from 'src/common/enums';
 
 @Processor('email')
 export class EmailWorker extends WorkerHost {

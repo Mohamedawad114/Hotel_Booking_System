@@ -10,28 +10,32 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model user {
   id          Int      @id @default(autoincrement())
   email       String   @unique
   password    String
-  username    String
   name        String
-  customer_id String   @unique
+  customer_id String?  @unique
   city        String
   street      String
-  phone String
+  phone       String
   photo       String?
-  isConfirmed  Boolean  @default(false)
+  secret      String?
+  isTwoFA     Boolean  @default(false)
+  BackupCodes String[]
+  isConfirmed Boolean  @default(false)
   role        Role?    @default(User)
   date_birth  DateTime
+  updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
 
   reviews   review[]
   payments  payment[]
   bookings  booking[]
-  favorites Favorite[]
+  favorites Favorite?
 }
 
 model review {
@@ -41,6 +45,7 @@ model review {
   hotel_id  Int
   rating    Int
   comment   String
+  updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }
 
@@ -53,7 +58,8 @@ model payment {
   paidAt     DateTime?
   status     paymentStatus @default(pending)
   booking    booking       @relation(fields: [booking_id], references: [id])
-  booking_id Int @unique
+  booking_id Int           @unique
+  updatedAt  DateTime      @updatedAt
   createdAt  DateTime      @default(now())
 }
 
@@ -66,18 +72,18 @@ model booking {
   booking_status BookingStatus @default(PENDING)
   check_in       DateTime
   check_out      DateTime
+  updatedAt      DateTime      @updatedAt
   createdAt      DateTime      @default(now())
   payment        payment?
 }
 
 model Favorite {
   id        String   @id @default(uuid())
-  user      user     @relation(fields: [userId], references: [id])
-  userId    Int
-  hotelId   String
+  user      user     @relation(fields: [user_id], references: [id])
+  user_id   Int      @unique
+  hotel_ids String[]
+  updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
-
-  @@unique([userId, hotelId])
 }
 
 // enums

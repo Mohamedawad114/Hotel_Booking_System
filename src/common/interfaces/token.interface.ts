@@ -1,12 +1,13 @@
-import { Sys_Role } from "../enums";
+import { Sys_Role } from '../enums';
 
 export interface IToken {
   id: number;
-  username: string;
+  name: string;
   role: Sys_Role;
 }
 export interface IDecodedToken {
   id: number;
-  username: string;
+  name: string;
   role: Sys_Role;
+  jti?: string;
 }

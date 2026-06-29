@@ -10,6 +10,7 @@ import { CommonModule, PrismaModule, redis } from './common';
 import { LoggerModule } from 'nestjs-pino';
 import { GlobalErrFilter } from './common/guards';
 import { ResponseInterceptor, TimeoutInterceptor } from './common/interceptors';
+import { AuthModule, ProfileModule } from './modules';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -40,6 +41,8 @@ import { ResponseInterceptor, TimeoutInterceptor } from './common/interceptors';
     }),
     PrismaModule,
     CommonModule,
+    AuthModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [

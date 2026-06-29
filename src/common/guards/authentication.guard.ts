@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { GqlContextType } from '@nestjs/graphql';
 import { redis, redisKeys, TokenServices } from '../Utils';
+import { UserRepository } from '../repositories/prisma repositories';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(

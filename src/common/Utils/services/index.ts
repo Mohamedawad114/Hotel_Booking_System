@@ -6,3 +6,4 @@ export * from './Jobs/email/email.module';
 export * from './Jobs/email/email.producer';
 export * from './Jobs/AI/AI.job.module';
 export * from './Jobs/AI/AI.job.producer';
+export * from './2FA.service';

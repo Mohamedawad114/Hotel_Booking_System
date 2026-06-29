@@ -1,39 +1,23 @@
 import { customAlphabet } from 'nanoid';
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { IEmailData } from 'src/common/Interfaces';
 import { HashingService } from '../../Hashing/hash.service';
 import { redis, redisKeys } from '../redis';
 import { PinoLogger } from 'nestjs-pino';
-import { emailType } from 'src/common/Enum';
-import * as nodemailer from 'nodemailer';
+import { emailType } from 'src/common/enums';
+import { MailerService } from '@nestjs-modules/mailer';
 
 const createOTP = customAlphabet(`0123456789zxcvbnmalksjdhfgqwretruop`, 6);
-
 @Injectable()
-export class EmailServices implements IEmailData {
-  private transporter: nodemailer.Transporter;
-
+export class EmailServices {
   constructor(
     private readonly hashService: HashingService,
     private readonly logger: PinoLogger,
-    private readonly configService: ConfigService,
-  ) {
-    this.transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: this.configService.get<string>('BREVO_USER'),
-        pass: this.configService.get<string>('BREVO_API_KEY'),
-      },
-    });
-  }
-
+    private readonly mailService: MailerService,
+  ) {}
   sendEmail = async (to: string, subject: string, html: string) => {
     try {
-      const info = await this.transporter.sendMail({
-        from: `"ChatAI" <${this.configService.get<string>('BREVO_USER')}>`,
+      const info = await this.mailService.sendMail({
+        from: process.env.APP_GMAIL as string,
         to,
         subject,
         html,
@@ -83,7 +67,6 @@ export class EmailServices implements IEmailData {
     await redis.set(redisKeys.resetPassword(email), hashOTP, 'EX', 2 * 60);
     await this.sendEmail(email, emailType.resetPassword, resetHtml);
   };
-
   bannedUser_email = async (email: string) => {
     const bannedHtml = `
       <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">

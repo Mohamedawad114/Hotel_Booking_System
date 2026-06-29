@@ -15,7 +15,7 @@ export class MatchConstraint<T> implements ValidatorConstraintInterface {
     return `${args?.property} must match ${args?.constraints[0]}`;
   }
 }
-export function Match(constraint: string[], validationOptions?: any) {
+export function IsMatch(constraint: string[], validationOptions?: any) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       target: object.constructor,

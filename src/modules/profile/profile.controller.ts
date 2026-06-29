@@ -1,0 +1,145 @@
+import {
+  Controller,
+  Get,
+  Patch,
+  Delete,
+  Body,
+  Res,
+  Req,
+  Query,
+  HttpCode,
+} from '@nestjs/common';
+import { type IUser } from 'src/common/interfaces';
+import { Auth, AuthUser } from 'src/common/decorator';
+import {
+  ResetPasswordDto,
+  UpdatePasswordDto,
+  UpdateProfileDto,
+  //   UpdateUploadDto,
+  //   uploadDto,
+} from './Dto';
+import type { Request, Response } from 'express';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Sys_Role } from 'src/common/enums';
+import { ProfileService } from './profile.service';
+import { TwoFADto } from '../auth/Dto';
+import { Throttle } from '@nestjs/throttler';
+
+@Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
+@ApiTags('account')
+@Controller('account')
+export class AccountController {
+  constructor(private readonly profileServices: ProfileService) {}
+
+  //   @Get('upload')
+  //   @ApiOperation({ summary: 'Get upload profile picture data (presigned URL)' })
+  //   @ApiQuery({ type: uploadDto })
+  //   async UploadPic(@AuthUser() user: IUser, @Query() type: uploadDto) {
+  //     return await this.profileServices.upload(user, type);
+  //   }
+  @Get('profile')
+  @ApiOperation({ summary: 'Request password reset OTP' })
+  async Profile(@AuthUser() user: IUser) {
+    return await this.profileServices.getProfile(user);
+  }
+  @Get('reset-passwordReq')
+  @ApiOperation({ summary: 'Request password reset OTP' })
+  async resetPasswordReq(@AuthUser() user: IUser) {
+    return await this.profileServices.resetPasswordReq(user);
+  }
+
+  @Get('resend-OTP-reset')
+  @ApiOperation({ summary: 'Resend reset password OTP' })
+  async resendOTP_reset(@AuthUser() user: IUser) {
+    return await this.profileServices.resendOTP_reset(user);
+  }
+  @Get('setup-2fa')
+  @ApiOperation({ summary: 'setup 2fa' })
+  async enable2FA(@AuthUser() user: IUser) {
+    return await this.profileServices.setup2FA(user);
+  }
+  @Patch('update-profile')
+  @ApiOperation({ summary: 'Update profile data' })
+  @ApiBody({ type: UpdateProfileDto })
+  @ApiResponse({ status: 200, description: 'profile updated successfully' })
+  @ApiBadRequestResponse({ description: 'invalid data' })
+  async updateProfile(@AuthUser() user: IUser, @Body() dto: UpdateProfileDto) {
+    return await this.profileServices.updateProfile(user, dto);
+  }
+  @Patch('update-password')
+  @ApiOperation({ summary: 'Update current password' })
+  @ApiBody({ type: UpdatePasswordDto })
+  @ApiResponse({ status: 200, description: 'Password updated successfully' })
+  @ApiBadRequestResponse({ description: 'invalid old Password' })
+  async updatePassword(
+    @AuthUser() user: IUser,
+    @Body() dto: UpdatePasswordDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.profileServices.updatePassword(dto, user, res);
+  }
+  @Patch('reset-password')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Confirm password reset with OTP & delete refresh token',
+  })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiResponse({ status: 200, description: 'Password reset successfully' })
+  @ApiBadRequestResponse({ description: 'Invalid OTP or OTP expired' })
+  async resetPassword(
+    @AuthUser() user: IUser,
+    @Body() dto: ResetPasswordDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.profileServices.resetPasswordConfirm(user, dto, res);
+  }
+  @Patch('/enable-2fa')
+  @Throttle({ verifyTwoFA: { ttl: 60, limit: 12 } })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        code: {
+          type: 'number',
+          example: 25638,
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: '2FA is enabled successfully' })
+  @ApiBadRequestResponse({ description: 'Invalid code or code expired' })
+  async verify2FA(@AuthUser() user: IUser, @Body('code') code: string) {
+    return await this.profileServices.verifySetup2FA(user, code);
+  }
+
+  //   @Patch('update-profile-picture')
+  //   @HttpCode(200)
+  //   @ApiOperation({ summary: 'Update profile picture' })
+  //   @ApiBody({ type: UpdateUploadDto })
+  //   async updateUpload(@AuthUser() user: IUser, @Body() dto: UpdateUploadDto) {
+  //     return await this.profileServices.updateUpload(dto, user);
+  //   }
+
+  @Delete('logout')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Logout from current device' })
+  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    return await this.profileServices.logout(req, res);
+  }
+  @Delete('logoutAll')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Logout from all devices' })
+  async logoutAllDevices(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return await this.profileServices.logoutAllDevices(req, res);
+  }
+}

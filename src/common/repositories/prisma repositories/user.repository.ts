@@ -12,4 +12,7 @@ export class UserRepository extends BaseRepository<
   constructor(protected readonly prisma: PrismaService) {
     super(prisma.user, prisma);
   }
+  async findByEmail(email: string, options?: any) {
+    return await this.model.findUnique({ where: { email }, ...options });
+  }
 }
