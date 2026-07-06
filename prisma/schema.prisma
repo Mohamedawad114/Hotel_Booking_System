@@ -78,7 +78,7 @@ model booking {
 }
 
 model Favorite {
-  id        String   @id @default(uuid())
+  id        Int   @id @default(autoincrement())
   user      user     @relation(fields: [user_id], references: [id])
   user_id   Int      @unique
   hotel_ids String[]
@@ -86,6 +86,14 @@ model Favorite {
   createdAt DateTime @default(now())
 }
 
+model destination{
+  id Int @id @default(autoincrement())
+  dest String @unique
+  name String
+  countryCode String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
 // enums
 enum Role {
   Admin

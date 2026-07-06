@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { Injectable } from '@nestjs/common';
 import { HashingService } from '../../Hashing/hash.service';
-import { redis, redisKeys } from '../redis';
+import { redis, redisKeys, TTL } from '../redis';
 import { PinoLogger } from 'nestjs-pino';
 import { emailType } from 'src/common/enums';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -43,7 +43,7 @@ export class EmailServices {
       </div>
     `;
     const hashOTP = await this.hashService.generateHash(OTP);
-    await redis.set(redisKeys.OTP(email), hashOTP, 'EX', 2 * 60);
+    await redis.set(redisKeys.OTP(email), hashOTP, 'EX', TTL.OTP);
     await this.sendEmail(email, emailType.confirmation, html);
   };
 
@@ -64,7 +64,7 @@ export class EmailServices {
       </div>
     `;
     const hashOTP = await this.hashService.generateHash(OTP);
-    await redis.set(redisKeys.resetPassword(email), hashOTP, 'EX', 2 * 60);
+    await redis.set(redisKeys.resetPassword(email), hashOTP, 'EX', TTL.OTP);
     await this.sendEmail(email, emailType.resetPassword, resetHtml);
   };
   bannedUser_email = async (email: string) => {

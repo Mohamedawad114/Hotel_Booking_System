@@ -9,10 +9,7 @@ import { Reflector } from '@nestjs/core';
 import { Sys_Role } from '../enums';
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(
-    private readonly userRepo: UserRepository,
-    private readonly reflector: Reflector,
-  ) {}
+  constructor(private readonly reflector: Reflector) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const type = context.getType<GqlContextType>();
     switch (type) {

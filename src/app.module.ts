@@ -9,15 +9,20 @@ import { BullModule } from '@nestjs/bullmq';
 import { CommonModule, PrismaModule, redis } from './common';
 import { LoggerModule } from 'nestjs-pino';
 import { GlobalErrFilter } from './common/guards';
-import { ResponseInterceptor, TimeoutInterceptor } from './common/interceptors';
-import { AuthModule, ProfileModule } from './modules';
+import {
+  LoggingInterceptor,
+  ResponseInterceptor,
+  TimeoutInterceptor,
+} from './common/interceptors';
+import { AuthModule, DestinationModule, ProfileModule } from './modules';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
     ConfigModule.forRoot({
       envFilePath: resolve('./config/dev.env'),
       isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.MONGO_URI as string, {
+    MongooseModule.forRoot(process.env.MONGO_URL as string, {
       serverSelectionTimeoutMS: 3000,
     }),
     ThrottlerModule.forRoot([
@@ -27,6 +32,7 @@ import { AuthModule, ProfileModule } from './modules';
       },
     ]),
     BullModule.forRoot({ connection: redis }),
+    ScheduleModule.forRoot(),
     LoggerModule.forRoot({
       pinoHttp: {
         level: 'info',
@@ -43,6 +49,7 @@ import { AuthModule, ProfileModule } from './modules';
     CommonModule,
     AuthModule,
     ProfileModule,
+    DestinationModule,
   ],
   controllers: [AppController],
   providers: [
@@ -58,6 +65,10 @@ import { AuthModule, ProfileModule } from './modules';
     {
       provide: 'APP_INTERCEPTOR',
       useClass: ResponseInterceptor,
+    },
+    {
+      provide: 'APP_INTERCEPTOR',
+      useClass: LoggingInterceptor,
     },
     {
       provide: 'APP_PIPE',

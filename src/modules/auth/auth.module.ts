@@ -6,11 +6,18 @@ import {
   EmailModule,
   HashingService,
   TwoFAService,
+  UserRepository,
 } from 'src/common';
 
 @Module({
   imports: [EmailModule],
   controllers: [AuthController],
-  providers: [AuthService, CryptoService, HashingService, TwoFAService],
+  providers: [
+    AuthService,
+    CryptoService,
+    HashingService,
+    TwoFAService,
+    UserRepository,
+  ],
 })
 export class AuthModule {}

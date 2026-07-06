@@ -33,10 +33,13 @@ export abstract class BaseRepository<
   async create(data: CreateDto) {
     return await this.model.create({ data });
   }
+  async createMany(data: CreateDto[]) {
+    return await this.model.createMany({ data });
+  }
   async delete(filter: any) {
     return await this.model.delete({ where: filter });
   }
-  async deleteMany(filter: any) {
+  async deleteMany(filter?: any) {
     return await this.model.deleteMany({ where: filter });
   }
   async count(filter: any) {
@@ -56,6 +59,7 @@ type ModelDelegate = {
   findUnique(args: any): any;
   findFirst(args: any): any;
   create(args: any): any;
+  createMany(args: any): any;
   update(args: any): any;
   updateMany(args: any): any;
   delete(args: any): any;

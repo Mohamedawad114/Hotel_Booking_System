@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import hpp from 'hpp';
 import cookieParser from 'cookie-parser';
 import { PinoLogger } from 'nestjs-pino';
+import { SwaggerModule } from '@nestjs/swagger';
+import { swaggerConfig } from 'config/swagger.config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new PinoLogger({
@@ -15,6 +17,9 @@ async function bootstrap() {
     origin: '*',
   });
   app.setGlobalPrefix('api');
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, swaggerDocument);
+
   logger.info(`server is running... on 3000`);
   await app.listen(process.env.PORT ?? 3000);
 }

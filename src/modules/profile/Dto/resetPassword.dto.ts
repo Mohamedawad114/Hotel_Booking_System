@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsAlphanumeric,
   IsNotEmpty,
@@ -8,6 +9,10 @@ import {
 import { IsMatch } from 'src/common/decorator';
 
 export class ResetPasswordDto {
+  @ApiProperty({
+    example: 'A1B2C3',
+    description: '6-character verification code',
+  })
   @IsAlphanumeric()
   @Length(6, 6)
   @IsNotEmpty()
@@ -20,6 +25,7 @@ export class ResetPasswordDto {
   )
   newPassword!: string;
 
+  @ApiProperty({ example: 'NewP@ssword1', description: 'Confirm new password' })
   @IsString()
   @IsNotEmpty()
   @Matches(

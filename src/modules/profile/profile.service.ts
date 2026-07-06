@@ -12,6 +12,7 @@ import {
   redis,
   redisKeys,
   TokenServices,
+  TTL,
   TwoFAService,
   UserRepository,
 } from 'src/common';
@@ -175,7 +176,7 @@ export class ProfileService {
       redisKeys.token_blackList(accessToken as string),
       '0',
       'EX',
-      60 * 30,
+    TTL.token_blackList
     );
     res.clearCookie('refreshToken');
     return;
@@ -199,7 +200,7 @@ export class ProfileService {
       redisKeys.token_blackList(accessToken as string),
       '0',
       'EX',
-      60 * 30,
+      TTL.token_blackList
     );
     res.clearCookie('refreshToken');
     return;

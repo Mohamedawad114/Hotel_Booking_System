@@ -6,7 +6,6 @@ import {
   Body,
   Res,
   Req,
-  Query,
   HttpCode,
 } from '@nestjs/common';
 import { type IUser } from 'src/common/interfaces';
@@ -15,27 +14,24 @@ import {
   ResetPasswordDto,
   UpdatePasswordDto,
   UpdateProfileDto,
-  //   UpdateUploadDto,
-  //   uploadDto,
+
 } from './Dto';
 import type { Request, Response } from 'express';
 import {
   ApiBadRequestResponse,
   ApiBody,
   ApiOperation,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Sys_Role } from 'src/common/enums';
 import { ProfileService } from './profile.service';
-import { TwoFADto } from '../auth/Dto';
 import { Throttle } from '@nestjs/throttler';
 
 @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
-@ApiTags('account')
-@Controller('account')
-export class AccountController {
+@ApiTags('profile')
+@Controller('profile')
+export class ProfileController {
   constructor(private readonly profileServices: ProfileService) {}
 
   //   @Get('upload')
@@ -45,7 +41,7 @@ export class AccountController {
   //     return await this.profileServices.upload(user, type);
   //   }
   @Get('profile')
-  @ApiOperation({ summary: 'Request password reset OTP' })
+  @ApiOperation({ summary: 'Get current authenticated user profile' })
   async Profile(@AuthUser() user: IUser) {
     return await this.profileServices.getProfile(user);
   }
