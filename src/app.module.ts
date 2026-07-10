@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { resolve } from 'path';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
-import { CommonModule, PrismaModule, redis } from './common';
+import { CommonModule, PrismaModule, ProviderModule, redis } from './common';
 import { LoggerModule } from 'nestjs-pino';
 import { GlobalErrFilter } from './common/guards';
 import {
@@ -14,7 +14,12 @@ import {
   ResponseInterceptor,
   TimeoutInterceptor,
 } from './common/interceptors';
-import { AuthModule, DestinationModule, ProfileModule } from './modules';
+import {
+  AuthModule,
+  DestinationModule,
+  HotelModule,
+  ProfileModule,
+} from './modules';
 import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
@@ -46,10 +51,12 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     }),
     PrismaModule,
+    ProviderModule,
     CommonModule,
     AuthModule,
     ProfileModule,
     DestinationModule,
+    HotelModule,
   ],
   controllers: [AppController],
   providers: [

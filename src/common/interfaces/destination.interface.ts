@@ -1,6 +1,5 @@
 export interface IDestination {
-  id: number;
-  dest: string;
+  code: string;
   name: string;
   countryCode: string;
 }
