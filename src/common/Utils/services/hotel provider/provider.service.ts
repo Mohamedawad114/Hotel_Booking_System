@@ -7,9 +7,6 @@ import { firstValueFrom } from 'rxjs';
 import { IDestination } from 'src/common/interfaces';
 import { IHotel } from 'src/common/interfaces/hotel.interface';
 import { IProviderService } from 'src/common/interfaces/provider.interface';
-import { SearchHotelsDto } from 'src/modules/hotel/Dto/search.dto';
-import { QueryDto } from 'src/modules/hotel/Dto/query.dto';
-
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;
@@ -82,28 +79,120 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       throw error;
     }
   }
-  async getHotels(filter?: SearchHotelsDto, query?: QueryDto) {
+  async getHotels(countryCode: string): Promise<IHotel[]> {
     try {
-      const params = {
-        ...filter,
-        fields: 'all',
-        language: 'ENG',
-        countryCode: this.config.getOrThrow<string>('COUNTRYCODE'),
-        limit: query?.limit || 100,
-        cursor: query?.cursor || undefined,
-      };
-      const response$ = this.httpService.get('/hotel-content-api/1.0/hotels', {
-        params,
-      });
-      const response = await firstValueFrom(response$);
-      return response.data;
+      const allHotels: IHotel[] = [];
+      let from = 1,
+        hasMore = true;
+      while (hasMore) {
+        const response$ = this.httpService.get(
+          '/hotel-content-api/1.0/hotels',
+          {
+            params: {
+              countryCode,
+              fields: 'all',
+              language: 'ENG',
+              from,
+              to: from + 999,
+            },
+          },
+        );
+        const response = await firstValueFrom(response$);
+        const batch = response.data?.hotels || [];
+        allHotels.push(
+          ...batch.map((hotel: any) => {
+            const mappedPhones =
+              hotel.phones
+                ?.map(
+                  (p: any) =>
+                    p.phone || p.number || p.value || p.mobile || p.telephone,
+                )
+                .filter(Boolean) || [];
+            const finalPhones =
+              mappedPhones.length > 0
+                ? mappedPhones
+                : hotel.telephone
+                  ? [hotel.telephone]
+                  : [];
+            return {
+              id: hotel.code ?? 0,
+              code: hotel.code ?? 0,
+              name: hotel.name?.content || hotel.name?.text || hotel.name || '',
+              description:
+                hotel.description?.content ||
+                hotel.description?.text ||
+                hotel.description ||
+                '',
+              address:
+                hotel.address?.content ||
+                hotel.address?.text ||
+                hotel.address?.address ||
+                hotel.address ||
+                '',
+              phone: finalPhones,
+              images:
+                hotel.images
+                  ?.map((img: any) =>
+                    img?.path
+                      ? `https://photos.hotelbeds.com/giata/${img.path}`
+                      : img?.url || img?.src || '',
+                  )
+                  .filter(Boolean) || [],
+              facilities:
+                hotel.facilities
+                  ?.map(
+                    (f: any) =>
+                      f.description?.content || f.description || f.name || '',
+                  )
+                  .filter(Boolean) || [],
+              web: hotel.web || hotel.website || '',
+              ranking: Number(hotel.ranking) || 0,
+              rating:
+                Number(
+                  `${hotel.S2C ?? hotel.categoryCode}`.replace(/[^0-9]/g, ''),
+                ) || 0,
+              latitude:
+                hotel.coordinates?.latitude ||
+                hotel.coordinates?.lat ||
+                hotel.geoCode?.latitude ||
+                undefined,
+              longitude:
+                hotel.coordinates?.longitude ||
+                hotel.coordinates?.lon ||
+                hotel.geoCode?.longitude ||
+                undefined,
+              destinationCode: hotel.destinationCode || hotel.destination || '',
+              city:
+                hotel.city?.content ||
+                hotel.city?.text ||
+                hotel.city ||
+                hotel.address?.city ||
+                '',
+              countryCode: hotel.countryCode || countryCode || '',
+            };
+          }),
+        );
+        batch.length < 1000 ? (hasMore = false) : (from += 1000);
+      }
+      this.logger.info(`fetched ${allHotels.length}  hotels successfully `);
+      return allHotels;
     } catch (error: any) {
       this.logger.error(`فشل جلب الـ hotels: ${error.message}`);
       throw error;
     }
   }
-
-  async getHotelDetails(hotelId: string): Promise<IHotel> {
-    throw new Error('Method not implemented.');
+  async getHotelRooms(hotelCode: number) {
+    try {
+      const response$ = this.httpService.get('/hotel-content-api/1.0/hotels', {
+        params: {
+          countryCode,
+          fields: 'all',
+          language: 'ENG',
+          from,
+          to: from + 999,
+        },
+      });
+      throw new Error('Method not implemented.');
+    } catch (err) {}
   }
 }

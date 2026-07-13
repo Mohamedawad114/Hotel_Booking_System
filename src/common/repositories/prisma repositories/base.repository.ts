@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/common/prisma/prisma.service';
-import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export abstract class BaseRepository<
@@ -30,11 +30,18 @@ export abstract class BaseRepository<
   async updateMany(filter: any, data: UpdateDto) {
     return await this.model.updateMany({ where: filter, data });
   }
+  async upsert(filter: any, data: UpdateDto) {
+    return await this.model.upsert({
+      where: filter,
+      update: data,
+      create: data,
+    });
+  }
   async create(data: CreateDto) {
     return await this.model.create({ data });
   }
-  async createMany(data: CreateDto[]) {
-    return await this.model.createMany({ data });
+  async createMany(data: CreateDto[], option?: any) {
+    return await this.model.createMany({ data, ...option });
   }
   async delete(filter: any) {
     return await this.model.delete({ where: filter });
@@ -42,7 +49,7 @@ export abstract class BaseRepository<
   async deleteMany(filter?: any) {
     return await this.model.deleteMany({ where: filter });
   }
-  async count(filter: any) {
+  async count(filter?: any) {
     return await this.model.count({ where: filter });
   }
   async transaction<T>(
@@ -61,8 +68,9 @@ type ModelDelegate = {
   create(args: any): any;
   createMany(args: any): any;
   update(args: any): any;
+  upsert(args: any): any;
   updateMany(args: any): any;
   delete(args: any): any;
-  deleteMany(args: any): any;
+  deleteMany(args?: any): any;
   count(args?: any): any;
 };

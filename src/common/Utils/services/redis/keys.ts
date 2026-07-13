@@ -9,6 +9,10 @@ export const redisKeys = {
     `idempotencyKey:${key}:${op}:${id}`,
   socketKey: (userId: string) => `user_sockets:${userId}`,
   destination: () => `destinations`,
+  getHotels: (countryCode?: string, cursor?: string, limit?: number) =>
+    `hotel_${countryCode}: ${cursor}:${limit}`,
+  hotelDetail: (hotelId:number) =>
+    `hotel_${hotelId}`,
   chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
 };
 
@@ -18,4 +22,6 @@ export const TTL = {
   OTP: 60 * 2,
   token_blackList: 60 * 30,
   destination: 60 * 60 * 24 * 2,
+  hotels: 60 * 60 * 24 * 30,
+  hotelDetail: 60 * 60 * 24 * 30,
 };

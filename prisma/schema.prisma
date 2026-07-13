@@ -86,6 +86,29 @@ model Favorite {
   createdAt DateTime @default(now())
 }
 
+model hotel {
+  id              Int         @id @default(autoincrement())
+  code            Int         @unique
+  name            String
+  description     String
+  address         String
+  phone           String[]
+  images          String[]
+  facilities      String[]
+  web             String
+  ranking         Int
+  rating          Int
+  latitude        Float?
+  longitude       Float?
+  destinationCode String
+  destination     destination @relation(fields: [destinationCode], references: [code])
+  city  String
+  countryCode     String
+  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime    @default(now())
+  @@index([createdAt])
+}
+
 model destination {
   id          Int      @id @default(autoincrement())
   code        String   @unique
@@ -93,6 +116,7 @@ model destination {
   countryCode String
   updatedAt   DateTime @updatedAt
   createdAt   DateTime @default(now())
+  hotels      hotel[]
 }
 
 // enums

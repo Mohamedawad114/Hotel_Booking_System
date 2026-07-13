@@ -1,42 +1,24 @@
-import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class SearchHotelsDto {
   @IsOptional()
   @IsString()
   hotelName?: string;
-
   @IsOptional()
+  @IsString()
   destinationCode?: string;
   @IsOptional()
-  destinationName?: string;
+  @IsString()
+  city?: string;
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
-  minPrice?: number;
+  @Min(1)
+  @Max(5)
+  rating?: number;
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
 
-  @IsOptional()
-  @IsNumber()
-  maxPrice?: number;
-
-  @IsOptional()
-  @IsNumber()
-  minRating?: number;
-
-  @IsOptional()
-  @IsNumber()
-  rooms?: number;
-  @IsDateString()
-  @IsOptional()
-  checkIn?: string;
-
-  @IsDateString()
-  @IsOptional()
-  checkOut?: string;
-
-  @IsNumber()
-  @IsOptional()
-  adults?: number;
-
-  @IsNumber()
-  @IsOptional()
-  children?: number;
 }

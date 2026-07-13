@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import { ICursorDecoded } from 'src/common/interfaces';
 
 export const encodedCursor = ({
@@ -6,13 +5,13 @@ export const encodedCursor = ({
   id,
 }: {
   createdAt: Date;
-  id: Types.ObjectId;
+  id: number;
 }) => {
   const str = JSON.stringify({ id, createdAt });
   return Buffer.from(str).toString('base64');
 };
-export const decoderCursor = (cursor?: string): ICursorDecoded | null => {
-  if (!cursor) return null;
+export const decoderCursor = (cursor?: string): ICursorDecoded | undefined => {
+  if (!cursor) return ;
   const decodedStr = Buffer.from(cursor, 'base64').toString('utf-8');
   return JSON.parse(decodedStr) as ICursorDecoded;
 };
