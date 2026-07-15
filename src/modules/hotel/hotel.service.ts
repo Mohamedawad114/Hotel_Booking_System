@@ -113,9 +113,9 @@ export class HotelServices implements OnModuleInit {
       }
       await this.addHotels(data);
     } catch (err) {
-      this.logger.error('Failed to seed hotels on module init', err);
+      this.logger.error('Failed to seed hotels on module init');
+      throw err;
     }
   }
-  hotelRooms = async () => { };
-  
+  hotelRooms = async () => {};
 }

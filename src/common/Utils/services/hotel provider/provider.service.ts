@@ -118,6 +118,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
               id: hotel.code ?? 0,
               code: hotel.code ?? 0,
               name: hotel.name?.content || hotel.name?.text || hotel.name || '',
+              email:hotel.email,
               description:
                 hotel.description?.content ||
                 hotel.description?.text ||
@@ -182,17 +183,18 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
     }
   }
   async getHotelRooms(hotelCode: number) {
-    try {
-      const response$ = this.httpService.get('/hotel-content-api/1.0/hotels', {
-        params: {
-          countryCode,
-          fields: 'all',
-          language: 'ENG',
-          from,
-          to: from + 999,
-        },
-      });
-      throw new Error('Method not implemented.');
-    } catch (err) {}
+    // try {
+    //   const response$ = this.httpService.get('/hotel-content-api/1.0/hotels', {
+    //     params: {
+    //       code:hotelCode
+    //       countryCode,
+    //       fields: 'all',
+    //       language: 'ENG',
+    //       from,
+    //       to: from + 999,
+    //     },
+    //   });
+    //   throw new Error('Method not implemented.');
+    // } catch (err) {}
   }
 }

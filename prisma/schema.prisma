@@ -35,53 +35,58 @@ model user {
   reviews   review[]
   payments  payment[]
   bookings  booking[]
-  favorites Favorite?
+  favorites favorite[]
 }
 
 model review {
-  id        Int      @id @default(autoincrement())
-  user      user     @relation(fields: [user_id], references: [id])
-  user_id   Int
-  hotel_id  Int
-  rating    Int
-  comment   String
+  id      Int    @id @default(autoincrement())
+  user    user   @relation(fields: [userId], references: [id])
+  userId  Int
+  hotel   hotel  @relation(fields: [hotelId], references: [id])
+  hotelId Int
+  rating  Int
+  comment String
+
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }
 
 model payment {
-  id         Int           @id @default(autoincrement())
-  user       user          @relation(fields: [user_id], references: [id])
-  user_id    Int
-  amount     Float
-  payment_id String        @unique
-  paidAt     DateTime?
-  status     paymentStatus @default(pending)
-  booking    booking       @relation(fields: [booking_id], references: [id])
-  booking_id Int           @unique
-  updatedAt  DateTime      @updatedAt
-  createdAt  DateTime      @default(now())
+  id        Int           @id @default(autoincrement())
+  user      user          @relation(fields: [userId], references: [id])
+  userId    Int
+  amount    Float
+  paymentId String        @unique
+  paidAt    DateTime?
+  status    paymentStatus @default(pending)
+  booking   booking       @relation(fields: [bookingId], references: [id])
+  bookingId Int           @unique
+  updatedAt DateTime      @updatedAt
+  createdAt DateTime      @default(now())
 }
 
 model booking {
   id             Int           @id @default(autoincrement())
-  user           user          @relation(fields: [user_id], references: [id])
-  user_id        Int
-  hotel_id       String
-  room_id        Int
+  user           user          @relation(fields: [userId], references: [id])
+  userId         Int
+  room           room          @relation(fields: [roomCode], references: [code])
+  roomCode       String
   booking_status BookingStatus @default(PENDING)
   check_in       DateTime
   check_out      DateTime
   updatedAt      DateTime      @updatedAt
   createdAt      DateTime      @default(now())
   payment        payment?
+
+  @@unique([check_in, check_out, roomCode])
 }
 
-model Favorite {
+model favorite {
   id        Int      @id @default(autoincrement())
-  user      user     @relation(fields: [user_id], references: [id])
-  user_id   Int      @unique
-  hotel_ids String[]
+  user      user     @relation(fields: [userId], references: [id])
+  userId    Int
+  hotel     hotel    @relation(fields: [hotelId], references: [id])
+  hotelId   Int
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 }
@@ -92,6 +97,7 @@ model hotel {
   name            String
   description     String
   address         String
+  email           String?
   phone           String[]
   images          String[]
   facilities      String[]
@@ -102,13 +108,30 @@ model hotel {
   longitude       Float?
   destinationCode String
   destination     destination @relation(fields: [destinationCode], references: [code])
-  city  String
+  city            String
   countryCode     String
   updatedAt       DateTime    @updatedAt
   createdAt       DateTime    @default(now())
+  favorites       favorite[]
+  reviews         review[]
+  rooms           room[]
+
   @@index([createdAt])
 }
 
+model room {
+  id           Int       @id @default(autoincrement())
+  code         String    @unique
+  hotelCode    Int
+  hotel        hotel     @relation(fields: [hotelCode], references: [code])
+  maxAudits    Int
+  maxChildren  Int
+  description  String?
+  roomType     String
+  roomCategory String
+  facilities   String[]
+  bookings     booking[]
+}
 model destination {
   id          Int      @id @default(autoincrement())
   code        String   @unique
@@ -118,6 +141,7 @@ model destination {
   createdAt   DateTime @default(now())
   hotels      hotel[]
 }
+
 
 // enums
 enum Role {
