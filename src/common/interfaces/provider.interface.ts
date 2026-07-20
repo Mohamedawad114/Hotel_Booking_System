@@ -1,8 +1,8 @@
 import { IDestination } from './destination.interface';
-import { IHotel } from './hotel.interface';
+import { IFacility } from './facility.interface';
 
 export interface IProviderService {
   getDestinations(countryCode: string): Promise<IDestination[]>;
-  getHotels(filter: any): Promise<IHotel[]>;
-  getHotelRooms(hotelCode: number);
+  getFacilities(): Promise<IFacility[]>;
+  getData(countryCode: string);
 }

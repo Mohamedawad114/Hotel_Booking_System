@@ -7,7 +7,6 @@ export interface IHotel {
   address: string;
   phone: string[];
   images: string[];
-  facilities:string[];
   web: string;
   ranking: number;
   rating: number;
@@ -16,7 +15,7 @@ export interface IHotel {
   destinationCode: string;
   city: string;
   countryCode: string;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export interface IHotelCursor {

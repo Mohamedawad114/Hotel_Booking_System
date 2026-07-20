@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDate, IsInt, IsNumber, IsOptional } from 'class-validator';
+import { IsDate, IsInt, IsOptional } from 'class-validator';
 
 export class searchRoomsDto {
   @IsInt()
@@ -7,15 +7,8 @@ export class searchRoomsDto {
   children?: number;
   @IsInt()
   @IsOptional()
-  audit?: number;
-  @IsDate()
-  @Type(() => Number)
-  @IsOptional()
-  checkIn?: Date;
-  @IsDate()
-  @Type(() => Number)
-  @IsOptional()
-  checkOut?: Date;
+  adults?: number;
+
   @IsInt()
   @IsOptional()
   roomsCount?: number;

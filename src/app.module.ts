@@ -17,6 +17,7 @@ import {
 import {
   AuthModule,
   DestinationModule,
+  FacilityModule,
   HotelModule,
   ProfileModule,
 } from './modules';
@@ -56,6 +57,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     AuthModule,
     ProfileModule,
     DestinationModule,
+    FacilityModule,
     HotelModule,
   ],
   controllers: [AppController],

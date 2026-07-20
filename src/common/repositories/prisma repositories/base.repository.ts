@@ -30,7 +30,7 @@ export abstract class BaseRepository<
   async updateMany(filter: any, data: UpdateDto) {
     return await this.model.updateMany({ where: filter, data });
   }
-  async upsert(filter: any, data: UpdateDto) {
+  async upsert(data: UpdateDto|CreateDto, filter?: any) {
     return await this.model.upsert({
       where: filter,
       update: data,

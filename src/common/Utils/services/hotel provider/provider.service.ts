@@ -4,9 +4,15 @@ import { HttpService } from '@nestjs/axios';
 import * as crypto from 'crypto';
 import { PinoLogger } from 'nestjs-pino';
 import { firstValueFrom } from 'rxjs';
-import { IDestination } from 'src/common/interfaces';
+import {
+  IDestination,
+  IFacility,
+  IHotelFacilities,
+  IRoom,
+  IRoomFacilities,
+} from 'src/common/interfaces';
 import { IHotel } from 'src/common/interfaces/hotel.interface';
-import { IProviderService } from 'src/common/interfaces/provider.interface';
+import { IProviderService } from 'src/common/interfaces';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;
@@ -79,11 +85,42 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       throw error;
     }
   }
-  async getHotels(countryCode: string): Promise<IHotel[]> {
+  async getFacilities() {
+    try {
+      const facilities: IFacility[] = [];
+      const response = await firstValueFrom(
+        this.httpService.get('/hotel-content-api/1.0/types/facilities', {
+          params: { fields: 'all', language: 'ENG', from: 1, to: 1000 },
+        }),
+      );
+      const batch = response.data?.facilities || [];
+      facilities.push(
+        ...batch.map((f) => ({
+          id: f.code,
+          code: f.code,
+          name: f.description.content || '',
+          groupCode: f.facilityGroupCode,
+        })),
+      );
+      return facilities;
+    } catch (err: any) {
+      this.logger.error(`Failed to fetch facilities: ${err.message}`);
+      throw err;
+    }
+  }
+  async getData(countryCode: string): Promise<{
+    allHotels: IHotel[];
+    allHotelFacilities: any[];
+    allRooms: any[];
+    allRoomFacilities: any[];
+  }> {
     try {
       const allHotels: IHotel[] = [];
-      let from = 1,
-        hasMore = true;
+      const allHotelFacilities: IHotelFacilities[] = [];
+      const allRooms: IRoom[] = [];
+      const allRoomFacilities: IRoomFacilities[] = [];
+      let from = 1;
+      let hasMore = true;
       while (hasMore) {
         const response$ = this.httpService.get(
           '/hotel-content-api/1.0/hotels',
@@ -99,102 +136,141 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
         );
         const response = await firstValueFrom(response$);
         const batch = response.data?.hotels || [];
-        allHotels.push(
-          ...batch.map((hotel: any) => {
-            const mappedPhones =
-              hotel.phones
-                ?.map(
-                  (p: any) =>
-                    p.phone || p.number || p.value || p.mobile || p.telephone,
+        for (const hotel of batch) {
+          const { rooms, roomFacilities } = this.extractRoomData(
+            hotel.code,
+            hotel.rooms,
+          );
+          allRooms.push(...rooms);
+          allRoomFacilities.push(...roomFacilities);
+          const hotelFacilities = this.extractHotelFacilities(
+            hotel.code,
+            hotel.facilities,
+          );
+          allHotelFacilities.push(...hotelFacilities);
+          const mappedPhones =
+            hotel.phones
+              ?.map(
+                (p: any) =>
+                  p.phone || p.number || p.value || p.mobile || p.telephone,
+              )
+              .filter(Boolean) || [];
+          const finalPhones =
+            mappedPhones.length > 0
+              ? mappedPhones
+              : hotel.phone
+                ? [hotel.phone]
+                : [];
+          allHotels.push({
+            id: hotel.code ?? 0,
+            code: hotel.code ?? 0,
+            name: hotel.name?.content || hotel.name?.text || hotel.name || '',
+            email: hotel.email,
+            description:
+              hotel.description?.content ||
+              hotel.description?.text ||
+              hotel.description ||
+              '',
+            address:
+              hotel.address?.content ||
+              hotel.address?.text ||
+              hotel.address ||
+              '',
+            phone: finalPhones,
+            destinationCode:
+              hotel.city?.destinationCode ||
+              hotel.city?.zone?.destinationCode ||
+              '',
+            images:
+              hotel.images
+                ?.map((img: any) =>
+                  img?.path
+                    ? `https://photos.hotelbeds.com/giata/${img.path}`
+                    : img?.url || '',
                 )
-                .filter(Boolean) || [];
-            const finalPhones =
-              mappedPhones.length > 0
-                ? mappedPhones
-                : hotel.telephone
-                  ? [hotel.telephone]
-                  : [];
-            return {
-              id: hotel.code ?? 0,
-              code: hotel.code ?? 0,
-              name: hotel.name?.content || hotel.name?.text || hotel.name || '',
-              email:hotel.email,
-              description:
-                hotel.description?.content ||
-                hotel.description?.text ||
-                hotel.description ||
-                '',
-              address:
-                hotel.address?.content ||
-                hotel.address?.text ||
-                hotel.address?.address ||
-                hotel.address ||
-                '',
-              phone: finalPhones,
-              images:
-                hotel.images
-                  ?.map((img: any) =>
-                    img?.path
-                      ? `https://photos.hotelbeds.com/giata/${img.path}`
-                      : img?.url || img?.src || '',
-                  )
-                  .filter(Boolean) || [],
-              facilities:
-                hotel.facilities
-                  ?.map(
-                    (f: any) =>
-                      f.description?.content || f.description || f.name || '',
-                  )
-                  .filter(Boolean) || [],
-              web: hotel.web || hotel.website || '',
-              ranking: Number(hotel.ranking) || 0,
-              rating:
-                Number(
-                  `${hotel.S2C ?? hotel.categoryCode}`.replace(/[^0-9]/g, ''),
-                ) || 0,
-              latitude:
-                hotel.coordinates?.latitude ||
-                hotel.coordinates?.lat ||
-                hotel.geoCode?.latitude ||
-                undefined,
-              longitude:
-                hotel.coordinates?.longitude ||
-                hotel.coordinates?.lon ||
-                hotel.geoCode?.longitude ||
-                undefined,
-              destinationCode: hotel.destinationCode || hotel.destination || '',
-              city:
-                hotel.city?.content ||
-                hotel.city?.text ||
-                hotel.city ||
-                hotel.address?.city ||
-                '',
-              countryCode: hotel.countryCode || countryCode || '',
-            };
-          }),
-        );
+                .filter(Boolean) || [],
+            web: hotel.web || hotel.website || '',
+            ranking: Number(hotel.ranking) || 0,
+            rating:
+              Number(
+                `${hotel.S2C ?? hotel.categoryCode}`.replace(/[^0-9]/g, ''),
+              ) || 0,
+            latitude:
+              hotel.coordinates?.latitude ||
+              hotel.geoCode?.latitude ||
+              undefined,
+            longitude:
+              hotel.coordinates?.longitude ||
+              hotel.geoCode?.longitude ||
+              undefined,
+            city:
+              hotel.city?.content ||
+              hotel.city?.text ||
+              hotel.city ||
+              hotel.address?.city ||
+              '',
+            countryCode: hotel.countryCode || countryCode || '',
+          });
+        }
         batch.length < 1000 ? (hasMore = false) : (from += 1000);
       }
-      this.logger.info(`fetched ${allHotels.length}  hotels successfully `);
-      return allHotels;
+      this.logger.info(
+        `Fetched ${allHotels.length} hotels, ${allRooms.length} rooms successfully.`,
+      );
+      return {
+        allHotels,
+        allHotelFacilities,
+        allRooms,
+        allRoomFacilities,
+      };
     } catch (error: any) {
       this.logger.error(`فشل جلب الـ hotels: ${error.message}`);
       throw error;
     }
   }
-  async getHotelRooms(hotelCode: number) {
-    // try {
-    //   const response$ = this.httpService.get('/hotel-content-api/1.0/hotels', {
-    //     params: {
-    //       code:hotelCode
-    //       countryCode,
-    //       fields: 'all',
-    //       language: 'ENG',
-    //       from,
-    //       to: from + 999,
-    //     },
-    //   });
-    //   throw new Error('Method not implemented.');
-    // } catch (err) {}
+  private extractRoomData(hotelCode: number, apiRooms: any[]) {
+    const rooms: IRoom[] = [];
+    const roomFacilities: any[] = [];
+    if (!apiRooms) return { rooms, roomFacilities };
+    for (const room of apiRooms) {
+      rooms.push({
+        hotelId: hotelCode,
+        code: room.code,
+        roomType: room.roomType,
+        isParentRoom: room.isParentRoom,
+        roomCategory: room.characteristicCode,
+        maxAdults: room.maxAdults || 2,
+        maxChildren: room.maxChildren || 0,
+      });
+      if (room.roomFacilities) {
+        for (const rf of room.roomFacilities) {
+          roomFacilities.push({
+            roomCode: room.code,
+            facilityCode: rf.facilityCode,
+            indFee: rf.indFee ?? null,
+            indLogic: rf.indLogic ?? null,
+            voucher: rf.voucher ?? null,
+            number: rf.number ?? null,
+          });
+        }
+      }
+    }
+
+    return { rooms, roomFacilities };
+  }
+  private extractHotelFacilities(hotelCode: number, apiFacilities: any[]) {
+    if (!apiFacilities) return [];
+    return apiFacilities.map((fac) => ({
+      hotelId: hotelCode,
+      facilityCode: fac.facilityCode,
+      order: fac.order || null,
+      indFee: fac.indFee ?? null,
+      indYesOrNo: fac.indYesOrNo ?? null,
+      indLogic: fac.indLogic ?? null,
+      voucher: fac.voucher ?? null,
+      timeFrom: fac.timeFrom || null,
+      timeTo: fac.timeTo || null,
+      number: fac.number ?? null,
+    }));
   }
 }
