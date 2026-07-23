@@ -1,3 +1,4 @@
+
 export interface IHotel {
   id: number;
   code: number;
@@ -5,7 +6,6 @@ export interface IHotel {
   description: string;
   email: string;
   address: string;
-  phone: string[];
   images: string[];
   web: string;
   ranking: number;
@@ -22,4 +22,10 @@ export interface IHotelCursor {
   createdAt?: Date;
   limit?: number;
   id?: number;
+}
+export interface IHotelPhone {
+  id?: number;
+  hotelId: number;
+  phoneNumber: string;
+  phoneType: string;
 }

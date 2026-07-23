@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 
 @Injectable()
@@ -30,7 +29,7 @@ export abstract class BaseRepository<
   async updateMany(filter: any, data: UpdateDto) {
     return await this.model.updateMany({ where: filter, data });
   }
-  async upsert(data: UpdateDto|CreateDto, filter?: any) {
+  async upsert(data: UpdateDto | CreateDto, filter?: any) {
     return await this.model.upsert({
       where: filter,
       update: data,
@@ -52,12 +51,20 @@ export abstract class BaseRepository<
   async count(filter?: any) {
     return await this.model.count({ where: filter });
   }
+
   async transaction<T>(
     callback: (tx: PrismaService) => Promise<T>,
+    options?: { timeout?: number; maxWait?: number },
   ): Promise<T> {
-    return this.prisma.$transaction(async (tx) => {
-      return await callback(tx as any);
-    });
+    return this.prisma.$transaction(
+      async (tx) => {
+        return await callback(tx as any);
+      },
+      {
+        timeout: options?.timeout ?? 60000,
+        maxWait: options?.maxWait ?? 10000,
+      },
+    );
   }
 }
 

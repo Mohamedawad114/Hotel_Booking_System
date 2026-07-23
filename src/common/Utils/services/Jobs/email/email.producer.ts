@@ -16,6 +16,7 @@ export class EmailProducer {
       },
       {
         attempts: 3,
+        delay:2000,
         removeOnFail: false,
         removeOnComplete: true,
       },

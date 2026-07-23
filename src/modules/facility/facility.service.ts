@@ -8,6 +8,7 @@ import {
   TTL,
 } from 'src/common';
 import { AddFacility } from './dto/addFacility.dto';
+import { IFacility } from 'src/common/interfaces';
 
 @Injectable()
 export class FacilityService implements OnModuleInit {
@@ -42,8 +43,8 @@ export class FacilityService implements OnModuleInit {
     await redis.del(redisKeys.destination());
     this.logger.info('facilities synchronized successfully');
   };
-  addFacilities = async (data: AddFacility[]) => {
-    await this.facilityRepo.createMany(data);
+  addFacilities = async (data: IFacility[]) => {
+    await this.facilityRepo.createMany(data, { skipDuplicates: true });
     this.logger.info('facilities added successfully');
   };
   async onModuleInit() {
@@ -63,6 +64,7 @@ export class FacilityService implements OnModuleInit {
       this.logger.info('Destinations added successfully');
     } catch (error) {
       this.logger.error({ err: error }, 'Failed to add facilities');
+      throw error;
     }
   }
 }

@@ -20,8 +20,9 @@ export class HotelTask {
   @Cron('0 0 1 * * *')
   async updateHotels() {
     try {
-      const hotels = await this.hotelProvider.getHotels(this.countryCode);
-      await this.hotelServices.updateHotels(hotels);
+      const data = await this.hotelProvider.getData(this.countryCode);
+      await this.hotelServices.updateHotelsData(data);
+      this.logger.info(`data updated successfully`);
     } catch (err) {
       this.logger.info("can't update hotels");
       throw err;

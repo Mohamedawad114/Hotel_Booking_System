@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import {
   DestinationRepository,
+  FacilityRepository,
+  HotelFacilityRepository,
   HotelRepository,
   ProviderModule,
+  RoomFacilityRepository,
   RoomRepository,
 } from 'src/common';
 import { HotelServices } from './hotel.service';
@@ -15,8 +18,11 @@ import { HotelTask } from './hotel.tasks';
     HotelServices,
     DestinationRepository,
     HotelRepository,
+    FacilityRepository,
     HotelTask,
     RoomRepository,
+    RoomFacilityRepository,
+    HotelFacilityRepository,
   ],
   controllers: [HotelController],
 })

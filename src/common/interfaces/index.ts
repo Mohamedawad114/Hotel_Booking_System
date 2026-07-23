@@ -6,3 +6,5 @@ export * from './hotel.interface';
 export * from './room.interface';
 export * from './facility.interface';
 export * from './provider.interface';
+export * from './favorite.interface';
+export * from './review.interface';

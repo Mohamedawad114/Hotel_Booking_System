@@ -19,9 +19,13 @@ import {
   DestinationModule,
   FacilityModule,
   HotelModule,
+  FavoriteModule,
   ProfileModule,
+  ReviewModule,
 } from './modules';
 import { ScheduleModule } from '@nestjs/schedule';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { ExpressAdapter } from '@bull-board/express';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -38,6 +42,10 @@ import { ScheduleModule } from '@nestjs/schedule';
       },
     ]),
     BullModule.forRoot({ connection: redis }),
+    BullBoardModule.forRoot({
+      route: '/queues',
+      adapter: ExpressAdapter,
+    }),
     ScheduleModule.forRoot(),
     LoggerModule.forRoot({
       pinoHttp: {
@@ -59,6 +67,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     DestinationModule,
     FacilityModule,
     HotelModule,
+    FavoriteModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [

@@ -16,6 +16,7 @@ import {
   RoomRepository,
   RoomFacilityRepository,
   TTL,
+  FacilityRepository,
 } from 'src/common';
 import { SearchHotelsDto } from './Dto/search.dto';
 import { QueryDto } from './Dto/query.dto';
@@ -30,6 +31,7 @@ export class HotelServices implements OnModuleInit {
   constructor(
     private readonly destinationRepo: DestinationRepository,
     private readonly roomRepo: RoomRepository,
+    private readonly facilityRepo: FacilityRepository,
     private readonly roomFacilityRepo: RoomFacilityRepository,
     private readonly hotelFacilityRepo: HotelFacilityRepository,
     private readonly hotelProvider: HotelbedsProvider,
@@ -179,32 +181,139 @@ export class HotelServices implements OnModuleInit {
     );
     return res;
   }
-  updateHotelsData = async (data: IHotel[]) => {
-    this.logger.info(`بدء تحديث ${data.length} فندق في الداتابيز...`);
-    for (const hotel of data) {
-      await this.hotelRepo.upsert({ code: hotel.code }, hotel);
-    }
+  async updateHotelsData(data: {
+    allHotels: any[];
+    allHotelFacilities: any[];
+    allRooms: any[];
+    allRoomFacilities: any[];
+  }): Promise<void> {
+    this.logger.info(`بدء تحديث ${data.allHotels.length} فندق في الداتابيز...`);
+
+    await this.batchUpsert(
+      data.allHotels,
+      (hotel) => this.hotelRepo.upsert(hotel, { code: hotel.code }),
+      'hotels',
+    );
+    await this.batchUpsert(
+      data.allRooms,
+      (room) =>
+        this.roomRepo.upsert(room, {
+          hotelId_code: { hotelId: room.hotelId, code: room.code },
+        }),
+      'rooms',
+    );
+    await this.batchUpsert(
+      data.allHotelFacilities,
+      (fac) =>
+        this.hotelFacilityRepo.upsert(fac, {
+          hotelId_facilityCode: {
+            hotelId: fac.hotelId,
+            facilityCode: fac.facilityCode,
+          },
+        }),
+      'hotel facilities',
+    );
+    await this.batchUpsert(
+      data.allRoomFacilities,
+      (rf) =>
+        this.roomFacilityRepo.upsert(rf, {
+          roomCode_facilityCode: {
+            roomCode: rf.roomCode,
+            facilityCode: rf.facilityCode,
+          },
+        }),
+      'room facilities',
+    );
     this.logger.info('✅ تم مزامنة وتحديث جميع الفنادق بنجاح!');
-  };
-  addHotels = async (data: IHotel[]) => {
-    await this.hotelRepo.createMany(data, {
-      skipDuplicates: true,
-    });
-    this.logger.info('hotels added successfully');
-  };
+  }
+
   async onModuleInit() {
     try {
-      // const hotels = await this.hotelRepo.count();
-      // if (hotels > 0) return;
-      // const data = await this.hotelProvider.getData(this.countryCode);
-      // if (!data?.length) {
-      //   this.logger.warn('No hotels returned from provider, skipping seed');
-      //   return;
-      // }
-      // await this.addHotels(data);
+      const hotels = await this.hotelRepo.count();
+      const rooms = await this.roomRepo.count();
+      if (hotels > 0 && rooms > 0) return;
+      const {
+        allHotelFacilities,
+        allHotels,
+        allRoomFacilities,
+        allRooms,
+        allHotelPhones,
+      } = await this.hotelProvider.getData(this.countryCode);
+      if (!allHotels.length || !allRooms.length) {
+        this.logger.warn(
+          'No hotels or rooms returned from provider, skipping seed',
+        );
+        return;
+      }
+
+      const validFacilities = await this.facilityRepo.findMany(
+        {},
+        {
+          select: { code: true, groupCode: true },
+        },
+      );
+      const validKeysSet = new Set(
+        validFacilities.map((f) => `${f.code}-${f.groupCode}`),
+      );
+      const parsedRoomFacilities = allRoomFacilities.filter((rf) =>
+        validKeysSet.has(`${rf.facilityCode}-${rf.facilityGroupCode}`),
+      );
+      const parsedHotelFacilities = allHotelFacilities.filter((rf) =>
+        validKeysSet.has(`${rf.facilityCode}-${rf.facilityGroupCode}`),
+      );
+      await this.hotelRepo.transaction(
+        async (tx) => {
+          await tx.hotel.createMany({
+            data: allHotels,
+            skipDuplicates: true,
+          });
+          await tx.room.createMany({
+            data: allRooms,
+            skipDuplicates: true,
+          });
+          await tx.roomFacilities.createMany({
+            data: parsedRoomFacilities,
+            skipDuplicates: true,
+          });
+          await tx.hotelFacilities.createMany({
+            data: parsedHotelFacilities,
+            skipDuplicates: true,
+          });
+          await tx.hotelPhone.createMany({
+            data: allHotelPhones,
+            skipDuplicates: true,
+          });
+        },
+        { timeout: 60000 },
+      );
+      this.logger.info(`data seed successfully`);
     } catch (err) {
       this.logger.error('Failed to seed hotels on module init');
       throw err;
     }
+  }
+  private async batchUpsert<T>(
+    items: T[],
+    upsertFn: (item: T) => Promise<any>,
+    label: string,
+    batchSize = 50,
+  ): Promise<void> {
+    let succeeded = 0;
+    let failed = 0;
+
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      const results = await Promise.allSettled(batch.map(upsertFn));
+      for (const r of results) {
+        if (r.status === 'fulfilled') succeeded++;
+        else {
+          failed++;
+          this.logger.error(`فشل upsert لـ ${label}: ${r.reason?.message}`);
+        }
+      }
+    }
+    this.logger.info(
+      `${label}: ${succeeded} نجح، ${failed} فشل من ${items.length}.`,
+    );
   }
 }

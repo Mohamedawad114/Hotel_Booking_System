@@ -74,5 +74,14 @@ export class HotelRepository extends BaseRepository<
       throw error;
     }
   }
-
+}
+@Injectable()
+export class HotelPhonesRepository extends BaseRepository<
+  PrismaService['hotelPhone'],
+  Prisma.hotelPhoneUncheckedCreateInput,
+  Prisma.hotelPhoneUncheckedUpdateInput
+> {
+  constructor(protected readonly prisma: PrismaService) {
+    super(prisma.hotelPhone, prisma);
+  }
 }

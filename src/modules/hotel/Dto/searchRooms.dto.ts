@@ -1,5 +1,4 @@
-import { Type } from 'class-transformer';
-import { IsDate, IsInt, IsOptional } from 'class-validator';
+import { IsInt, IsOptional } from 'class-validator';
 
 export class searchRoomsDto {
   @IsInt()

@@ -109,7 +109,10 @@ export class HotelController {
   @Get(':id/facilities')
   @ApiOperation({ summary: 'Get facilities for a hotel' })
   @ApiParam({ name: 'id', type: Number, description: 'Hotel ID' })
-  @ApiResponse({ status: 200, description: 'Hotel facilities fetched successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Hotel facilities fetched successfully',
+  })
   @ApiResponse({ status: 404, description: 'Hotel not found' })
   async hotelFacilities(@Param('id', ParseIntPipe) hotelId: number) {
     return await this.hotelService.getHotelFacilities(hotelId);
@@ -118,7 +121,10 @@ export class HotelController {
   @Get('rooms/:roomId/facilities')
   @ApiOperation({ summary: 'Get facilities for a room' })
   @ApiParam({ name: 'roomId', type: Number, description: 'Room ID' })
-  @ApiResponse({ status: 200, description: 'Room facilities fetched successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Room facilities fetched successfully',
+  })
   async roomFacilities(@Param('roomId', ParseIntPipe) roomId: number) {
     return await this.hotelService.getRoomFacilities(roomId);
   }

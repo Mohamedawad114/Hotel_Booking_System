@@ -11,8 +11,7 @@ import {
   IRoom,
   IRoomFacilities,
 } from 'src/common/interfaces';
-import { IHotel } from 'src/common/interfaces/hotel.interface';
-import { IProviderService } from 'src/common/interfaces';
+import { IHotel, IHotelPhone, IProviderService } from 'src/common/interfaces';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;
@@ -96,7 +95,6 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       const batch = response.data?.facilities || [];
       facilities.push(
         ...batch.map((f) => ({
-          id: f.code,
           code: f.code,
           name: f.description.content || '',
           groupCode: f.facilityGroupCode,
@@ -110,14 +108,16 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
   }
   async getData(countryCode: string): Promise<{
     allHotels: IHotel[];
-    allHotelFacilities: any[];
-    allRooms: any[];
-    allRoomFacilities: any[];
+    allHotelFacilities: IHotelFacilities[];
+    allRooms: IRoom[];
+    allRoomFacilities: IRoomFacilities[];
+    allHotelPhones: IHotelPhone[];
   }> {
     try {
       const allHotels: IHotel[] = [];
       const allHotelFacilities: IHotelFacilities[] = [];
       const allRooms: IRoom[] = [];
+      const allHotelPhones: IHotelPhone[] = [];
       const allRoomFacilities: IRoomFacilities[] = [];
       let from = 1;
       let hasMore = true;
@@ -145,22 +145,21 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
           allRoomFacilities.push(...roomFacilities);
           const hotelFacilities = this.extractHotelFacilities(
             hotel.code,
-            hotel.facilities,
+            hotel?.facilities,
           );
           allHotelFacilities.push(...hotelFacilities);
-          const mappedPhones =
-            hotel.phones
-              ?.map(
-                (p: any) =>
-                  p.phone || p.number || p.value || p.mobile || p.telephone,
-              )
-              .filter(Boolean) || [];
-          const finalPhones =
-            mappedPhones.length > 0
-              ? mappedPhones
-              : hotel.phone
-                ? [hotel.phone]
-                : [];
+          if (hotel.phones) {
+            for (const p of hotel.phones) {
+              const num = p.phoneNumber;
+              if (num) {
+                allHotelPhones.push({
+                  hotelId: hotel.code,
+                  phoneNumber: num,
+                  phoneType: p.phoneType || 'PHONEHOTEL',
+                });
+              }
+            }
+          }
           allHotels.push({
             id: hotel.code ?? 0,
             code: hotel.code ?? 0,
@@ -176,11 +175,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
               hotel.address?.text ||
               hotel.address ||
               '',
-            phone: finalPhones,
-            destinationCode:
-              hotel.city?.destinationCode ||
-              hotel.city?.zone?.destinationCode ||
-              '',
+            destinationCode: hotel.destinationCode || hotel.destination || '',
             images:
               hotel.images
                 ?.map((img: any) =>
@@ -222,6 +217,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
         allHotelFacilities,
         allRooms,
         allRoomFacilities,
+        allHotelPhones,
       };
     } catch (error: any) {
       this.logger.error(`فشل جلب الـ hotels: ${error.message}`);
@@ -235,7 +231,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
     for (const room of apiRooms) {
       rooms.push({
         hotelId: hotelCode,
-        code: room.code,
+        code: room.roomCode,
         roomType: room.roomType,
         isParentRoom: room.isParentRoom,
         roomCategory: room.characteristicCode,
@@ -245,8 +241,10 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       if (room.roomFacilities) {
         for (const rf of room.roomFacilities) {
           roomFacilities.push({
-            roomCode: room.code,
+            roomCode: room.roomCode,
+            hotelId: hotelCode,
             facilityCode: rf.facilityCode,
+            facilityGroupCode: rf.facilityGroupCode,
             indFee: rf.indFee ?? null,
             indLogic: rf.indLogic ?? null,
             voucher: rf.voucher ?? null,
@@ -263,6 +261,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
     return apiFacilities.map((fac) => ({
       hotelId: hotelCode,
       facilityCode: fac.facilityCode,
+      facilityGroupCode: fac.facilityGroupCode,
       order: fac.order || null,
       indFee: fac.indFee ?? null,
       indYesOrNo: fac.indYesOrNo ?? null,

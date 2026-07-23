@@ -69,7 +69,8 @@ model booking {
   id             Int           @id @default(autoincrement())
   user           user          @relation(fields: [userId], references: [id])
   userId         Int
-  room           room          @relation(fields: [roomCode], references: [code])
+  hotelId        Int
+  room           room          @relation(fields: [roomCode, hotelId], references: [code, hotelId])
   roomCode       String
   booking_status BookingStatus @default(PENDING)
   check_in       DateTime
@@ -92,7 +93,7 @@ model favorite {
 }
 
 model hotel {
-  id              Int               @id @default(autoincrement())
+  id              Int               @id
   code            Int               @unique
   name            String
   description     String
@@ -116,20 +117,20 @@ model hotel {
   facilities      hotelFacilities[]
   phones          hotelPhone[]
 
-  @@index([createdAt,id])
+  @@index([createdAt, id])
 }
 
 model hotelPhone {
   id          Int       @id @default(autoincrement())
   phoneNumber String
-  phoneType   PhoneType
+  phoneType   String
   hotelId     Int
   hotel       hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
 }
 
 model room {
   id           Int              @id @default(autoincrement())
-  code         String           @unique
+  code         String
   hotelId      Int
   hotel        hotel            @relation(fields: [hotelId], references: [id])
   maxAdults    Int
@@ -139,21 +140,25 @@ model room {
   roomCategory String
   facilities   roomFacilities[]
   bookings     booking[]
+
+  @@unique([code, hotelId])
 }
 
 model facility {
-  id              Int               @id @default(autoincrement())
-  code            Int               @unique
+  id              Int            @id @default(autoincrement())
+  code            Int
   groupCode       Int
   name            String
   roomFacilities  roomFacilities[]
   hotelFacilities hotelFacilities[]
+  @@unique([code,groupCode])
 }
 
 model hotelFacilities {
   id           Int      @id @default(autoincrement())
   hotelId      Int
   facilityCode Int
+    facilityGroupCode   Int
   order        Int?
   indFee       Boolean?
   indLogic     Boolean?
@@ -163,7 +168,7 @@ model hotelFacilities {
   timeTo       String?
   number       Int?
   hotel        hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
-  facility     facility @relation(fields: [facilityCode], references: [code], onDelete: Cascade)
+  facility     facility @relation(fields: [facilityCode,facilityGroupCode], references: [code,groupCode], onDelete: Cascade)
 
   @@unique([hotelId, facilityCode])
 }
@@ -171,15 +176,17 @@ model hotelFacilities {
 model roomFacilities {
   id           Int      @id @default(autoincrement())
   facilityCode Int
+  facilityGroupCode   Int
   indFee       Boolean?
   indLogic     Boolean?
   voucher      Boolean?
   roomCode     String
+  hotelId      Int
   number       Int?
-  facility     facility @relation(fields: [facilityCode], references: [code], onDelete: Cascade)
-  room         room?    @relation(fields: [roomCode], references: [code])
+  facility     facility @relation(fields: [facilityCode,facilityGroupCode], references: [code,groupCode], onDelete: Cascade)
+  room         room     @relation(fields: [roomCode, hotelId], references: [code, hotelId])
 
-  @@unique([roomCode, facilityCode])
+  @@unique([hotelId, roomCode, facilityCode])
 }
 
 model destination {
@@ -213,8 +220,8 @@ enum BookingStatus {
   COMPLETED
 }
 
-enum PhoneType {
-  PHONEBOOKING
-  PHONEHOTEL
-  FAXNUMBER
-}
+// enum PhoneType {
+//   PHONEBOOKING
+//   PHONEHOTEL
+//   FAXNUMBER
+// }

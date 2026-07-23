@@ -17,7 +17,7 @@ export const redisKeys = {
     `hotelRooms: ${hotelId}_cursor:${cursor}_limit:${limit}`,
   hotelFacilities: (hotelId: number) => `hotelFacilities: ${hotelId}`,
   roomFacilities: (roomId: number) => `roomFacilities: ${roomId}`,
-  chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
+  // chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
 };
 
 export const TTL = {

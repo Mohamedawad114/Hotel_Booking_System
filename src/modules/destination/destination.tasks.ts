@@ -12,7 +12,7 @@ export class DestinationTasks {
     private readonly providerService: HotelbedsProvider,
     private readonly logger: PinoLogger,
   ) {}
-  @Cron(CronExpression.EVERY_WEEKEND)
+  @Cron('0 0 1 * *')
   async updateDestinations() {
     try {
       const destinations = await this.providerService.getDestinations(
