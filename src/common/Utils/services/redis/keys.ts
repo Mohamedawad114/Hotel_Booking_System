@@ -1,3 +1,5 @@
+import { SortingHotelsDto } from 'src/modules/hotel/Dto/search.dto';
+
 export const redisKeys = {
   refreshToken: (userId: number, jti?: string) =>
     `refreshToken_${userId}:${jti}`,
@@ -10,8 +12,14 @@ export const redisKeys = {
   socketKey: (userId: string) => `user_sockets:${userId}`,
   destination: () => `destinations`,
   facility: () => `facilities`,
-  getHotels: (countryCode?: string, cursor?: string, limit?: number) =>
-    `hotel_${countryCode}: ${cursor}:${limit}`,
+  getHotels: (
+    countryCode?: string,
+    cursor?: string,
+    limit?: number,
+    sorting?: SortingHotelsDto,
+    sortField?: string,
+  ) =>
+    `hotel:${countryCode ?? 'all'}:sortBy=${sortField ?? 'createdAt'}:${sorting?.rating ?? sorting?.ranking ?? 'desc'}:cursor=${cursor ?? 'start'}:limit=${limit ?? 20}`,
   hotelDetail: (hotelId: number) => `hotel_${hotelId}`,
   hotelRooms: (hotelId: number, cursor?: string, limit?: number) =>
     `hotelRooms: ${hotelId}_cursor:${cursor}_limit:${limit}`,

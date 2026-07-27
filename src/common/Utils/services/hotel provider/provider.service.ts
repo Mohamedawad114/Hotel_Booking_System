@@ -232,6 +232,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       rooms.push({
         hotelId: hotelCode,
         code: room.roomCode,
+        description: room.description,
         roomType: room.roomType,
         isParentRoom: room.isParentRoom,
         roomCategory: room.characteristicCode,

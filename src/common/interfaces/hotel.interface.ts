@@ -1,4 +1,3 @@
-
 export interface IHotel {
   id: number;
   code: number;
@@ -19,9 +18,10 @@ export interface IHotel {
 }
 
 export interface IHotelCursor {
-  createdAt?: Date;
-  limit?: number;
   id?: number;
+  value?: Date | number;
+  sortField?: 'createdAt' | 'rating' | 'ranking';
+  limit?: number;
 }
 export interface IHotelPhone {
   id?: number;

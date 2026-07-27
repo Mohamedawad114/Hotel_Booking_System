@@ -1,4 +1,4 @@
-import { IsInt, IsOptional } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class searchRoomsDto {
   @IsInt()
@@ -7,7 +7,9 @@ export class searchRoomsDto {
   @IsInt()
   @IsOptional()
   adults?: number;
-
+  @IsString()
+  @IsOptional()
+  description?: string;
   @IsInt()
   @IsOptional()
   roomsCount?: number;

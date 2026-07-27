@@ -5,8 +5,8 @@ export interface IRoom {
   maxChildren: number;
   description?: string;
   roomType: string;
-  isParentRoom:boolean;
+  isParentRoom: boolean;
   roomCategory: string;
-  createdAt?: Date
-  id?:number
+  createdAt?: Date;
+  id?: number;
 }

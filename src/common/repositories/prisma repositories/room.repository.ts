@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/common/prisma/prisma.service';
-import { searchRoomsDto } from 'src/modules/hotel/Dto/searchRooms.dto';
 import { IHotelCursor, IRoom } from 'src/common/interfaces';
 import { PinoLogger } from 'nestjs-pino';
+import { searchRoomsDto } from 'src/modules/room/Dto/searchRooms.dto';
 
 @Injectable()
 export class RoomRepository extends BaseRepository<
@@ -12,7 +12,10 @@ export class RoomRepository extends BaseRepository<
   Prisma.roomUncheckedCreateInput,
   Prisma.roomUncheckedUpdateInput
 > {
-  constructor(protected readonly prisma: PrismaService,private readonly logger: PinoLogger) {
+  constructor(
+    protected readonly prisma: PrismaService,
+    private readonly logger: PinoLogger,
+  ) {
     super(prisma.room, prisma);
   }
   async getHotelRooms(
@@ -22,9 +25,7 @@ export class RoomRepository extends BaseRepository<
   ): Promise<IRoom[]> {
     try {
       const limit = query?.limit || 20;
-      const cursorCreatedAt = query?.createdAt
-        ? new Date(query.createdAt)
-        : null;
+      const cursorCreatedAt = query?.value ? new Date(query.value) : null;
       const whereConditions: Prisma.Sql[] = [];
       whereConditions.push(Prisma.sql`"hotelId" = ${hotelId}`);
       if (cursorCreatedAt && query?.id) {
@@ -36,6 +37,11 @@ export class RoomRepository extends BaseRepository<
       }
       if (filter?.adults) {
         whereConditions.push(Prisma.sql`"maxAdults" >= ${filter.adults}`);
+      }
+      if (filter?.description) {
+        whereConditions.push(
+          Prisma.sql`description ILIKE ${'%' + filter.description + '%'}`,
+        );
       }
       if (filter?.children) {
         whereConditions.push(Prisma.sql`"maxChildren" >= ${filter.children}`);

@@ -2,9 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/common/prisma/prisma.service';
-import { SearchHotelsDto } from 'src/modules/hotel/Dto/search.dto';
+import {
+  SearchHotelsDto,
+  SortingHotelsDto,
+} from 'src/modules/hotel/Dto/search.dto';
 import { PinoLogger } from 'nestjs-pino';
-import { IHotelCursor, IRoom } from 'src/common/interfaces';
+import { IHotel, IHotelCursor } from 'src/common/interfaces';
+import { order } from 'src/common/enums';
 
 @Injectable()
 export class HotelRepository extends BaseRepository<
@@ -19,26 +23,48 @@ export class HotelRepository extends BaseRepository<
     super(prisma.hotel, prisma);
   }
 
-  async getHotels(filter?: SearchHotelsDto, query?: IHotelCursor) {
+  async getHotels(
+    filter?: SearchHotelsDto,
+    query?: IHotelCursor,
+    sort?: SortingHotelsDto,
+  ) {
     try {
-      const limit = query?.limit || 20;
-      const cursorCreatedAt = query?.createdAt
-        ? new Date(query.createdAt)
-        : null;
+      const limit = query?.limit;
+      let sortField = 'createdAt';
+      let sortDirection: order = order.desc;
+      if (sort?.rating) {
+        sortField = 'rating';
+        sortDirection = sort.rating;
+      } else if (sort?.ranking) {
+        sortField = 'ranking';
+        sortDirection = sort.ranking;
+      }
+      const cursorValue =
+        sortField === 'createdAt' && query?.value
+          ? new Date(query.value)
+          : query?.value;
+      const isAsc = sortDirection === order.asc;
+      const orderSql = Prisma.raw(sortDirection);
+      const compareOp = isAsc ? Prisma.raw('>') : Prisma.raw('<');
+      const fieldSql = Prisma.raw(`"${sortField}"`);
       const whereConditions: Prisma.Sql[] = [];
-      if (cursorCreatedAt && query?.id) {
+      if (cursorValue !== undefined && query?.id) {
         whereConditions.push(
-          Prisma.sql`("createdAt", id) > (${cursorCreatedAt}, ${query.id})`,
+          Prisma.sql`
+          (${fieldSql}, id)
+          ${compareOp}
+          (${cursorValue}, ${query.id})
+        `,
         );
-      } else if (cursorCreatedAt) {
-        whereConditions.push(Prisma.sql`"createdAt" > ${cursorCreatedAt}`);
       }
       if (filter?.hotelName) {
         whereConditions.push(
-          Prisma.sql`(
-        name ILIKE ${'%' + filter.hotelName + '%'}
-        OR description ILIKE ${'%' + filter.hotelName + '%'}
-      )`,
+          Prisma.sql`
+          (
+            name ILIKE ${'%' + filter.hotelName + '%'}
+            OR description ILIKE ${'%' + filter.hotelName + '%'}
+          )
+        `,
         );
       }
       if (filter?.destinationCode) {
@@ -53,24 +79,23 @@ export class HotelRepository extends BaseRepository<
         whereConditions.length > 0
           ? Prisma.sql`WHERE ${Prisma.join(whereConditions, ' AND ')}`
           : Prisma.empty;
-      const hotels = await this.prisma.$queryRaw`
+      const hotels = await this.prisma.$queryRaw<IHotel[]>`
       SELECT
         id,
         name,
         description,
         rating,
+        ranking,
         "destinationCode",
         images[1] as "mainImage",
         "createdAt"
       FROM hotel
       ${whereClause}
-      ORDER BY "createdAt" ASC, id ASC
+      ORDER BY ${fieldSql} ${orderSql}, id ${orderSql}
       LIMIT ${limit};
     `;
-
       return hotels;
-    } catch (error: any) {
-      this.logger.error(`Failed to fetch hotels: ${error.message}`);
+    } catch (error) {
       throw error;
     }
   }

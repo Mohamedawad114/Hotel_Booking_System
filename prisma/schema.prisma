@@ -137,6 +137,7 @@ model room {
   maxChildren  Int
   isParentRoom Boolean?
   roomType     String
+  description String?
   roomCategory String
   facilities   roomFacilities[]
   bookings     booking[]
@@ -199,6 +200,19 @@ model destination {
   createdAt   DateTime @default(now())
   hotels      hotel[]
 }
+// model RoomAvailability {
+//   id           Int   @id @default(autoincrement())
+//   roomTypeId   String
+//   date         DateTime @db.Date 
+//   available    Int     
+//   price        Decimal  @db.Decimal(10, 2) 
+//   isBlocked    Boolean  @default(false) 
+
+//   roomType     RoomType @relation(fields: [roomTypeId], references: [id])
+
+//   @@unique([roomTypeId, date]) 
+//   @@index([roomTypeId, date, available])
+// }
 
 // enums
 enum Role {

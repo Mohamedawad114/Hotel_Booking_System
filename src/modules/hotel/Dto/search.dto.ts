@@ -1,5 +1,13 @@
-import { IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
+import {
+  IsNumber,
+  IsOptional,
+  IsString,
+  Min,
+  Max,
+  IsEnum,
+} from 'class-validator';
 import { Type } from 'class-transformer';
+import { order } from 'src/common/enums';
 
 export class SearchHotelsDto {
   @IsOptional()
@@ -20,5 +28,13 @@ export class SearchHotelsDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
+}
 
+export class SortingHotelsDto {
+  @IsOptional()
+  @IsEnum(order)
+  ranking?: order;
+  @IsOptional()
+  @IsEnum(order)
+  rating?: order;
 }
