@@ -90,7 +90,6 @@ export class AuthController {
     summary:
       'Refresh access token using refresh token & delete old refresh token',
   })
-  @ApiBearerAuth('access-token')
   @ApiResponse({
     status: 200,
     description: 'Token refreshed successfully',

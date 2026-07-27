@@ -84,7 +84,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       throw error;
     }
   }
-  async getFacilities() {
+  async getFacilities():Promise<IFacility[]>{
     try {
       const facilities: IFacility[] = [];
       const response = await firstValueFrom(

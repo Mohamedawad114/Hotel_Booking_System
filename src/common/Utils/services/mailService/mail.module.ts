@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailServices } from './mail.service';
 import { HashingService } from '../../Hashing/hash.service';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -7,16 +7,19 @@ import { MailerModule } from '@nestjs-modules/mailer';
 @Module({
   imports: [
     ConfigModule,
-    MailerModule.forRoot({
-      transport: {
-        port: 465,
-        service: process.env.MAIL_SERVICE as string,
-        secure:true,
-        auth: {
-          pass: process.env.APP_PASSWORD as string,
-          user: process.env.APP_GMAIL as string,
+    MailerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: configService.get<string>('APP_GMAIL'),
+            pass: configService.get<string>('APP_PASSWORD'),
+          },
         },
-      },
+      }),
     }),
   ],
   providers: [EmailServices, HashingService],

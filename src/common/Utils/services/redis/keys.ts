@@ -16,7 +16,8 @@ export const redisKeys = {
   hotelRooms: (hotelId: number, cursor?: string, limit?: number) =>
     `hotelRooms: ${hotelId}_cursor:${cursor}_limit:${limit}`,
   hotelFacilities: (hotelId: number) => `hotelFacilities: ${hotelId}`,
-  roomFacilities: (roomId: number) => `roomFacilities: ${roomId}`,
+  roomFacilities: (roomCode: string, hotelId: number) =>
+    `roomFacilities: ${roomCode}_${hotelId}`,
   // chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
 };
 

@@ -7,15 +7,11 @@ import {
   Res,
   Req,
   HttpCode,
+  Put,
 } from '@nestjs/common';
 import { type IUser } from 'src/common/interfaces';
 import { Auth, AuthUser } from 'src/common/decorator';
-import {
-  ResetPasswordDto,
-  UpdatePasswordDto,
-  UpdateProfileDto,
-
-} from './Dto';
+import { ResetPasswordDto, UpdatePasswordDto, UpdateProfileDto } from './Dto';
 import type { Request, Response } from 'express';
 import {
   ApiBadRequestResponse,
@@ -40,7 +36,7 @@ export class ProfileController {
   //   async UploadPic(@AuthUser() user: IUser, @Query() type: uploadDto) {
   //     return await this.profileServices.upload(user, type);
   //   }
-  @Get('profile')
+  @Get('')
   @ApiOperation({ summary: 'Get current authenticated user profile' })
   async Profile(@AuthUser() user: IUser) {
     return await this.profileServices.getProfile(user);
@@ -61,7 +57,7 @@ export class ProfileController {
   async enable2FA(@AuthUser() user: IUser) {
     return await this.profileServices.setup2FA(user);
   }
-  @Patch('update-profile')
+  @Put('update-profile')
   @ApiOperation({ summary: 'Update profile data' })
   @ApiBody({ type: UpdateProfileDto })
   @ApiResponse({ status: 200, description: 'profile updated successfully' })

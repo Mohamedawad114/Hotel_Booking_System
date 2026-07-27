@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { GqlContextType } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
-import { Sys_Role } from '../enums';
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -15,18 +14,15 @@ export class RolesGuard implements CanActivate {
     switch (type) {
       case 'http': {
         const request = context.switchToHttp().getRequest();
-        const userRoles = request.user?.roles;
-        if (!userRoles) return false;
+        const userRole = request.user?.role;
+        if (!userRole) return false;
         const allowedRoles = this.reflector.getAllAndOverride<string[]>(
           'roles',
           [context.getHandler(), context.getClass()],
         );
         if (!allowedRoles) return true;
-        const hasRole = userRoles.some((role: Sys_Role) =>
-          allowedRoles.includes(role),
-        );
-        if (!hasRole) throw new NotFoundException('user not found');
-        return hasRole;
+        if (allowedRoles && allowedRoles.includes(userRole)) return true;
+        return false;
       }
     }
     return true;

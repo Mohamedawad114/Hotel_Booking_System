@@ -142,30 +142,36 @@ export class ProfileService {
     const { url } = await this.twoFA.generateSecret(email);
     return { data: { qr: url } };
   };
-
   verifySetup2FA = async (user: IUser, code: string) => {
-    const secretHashed = await redis.getdel(redisKeys.secret(user.email));
-    if (!secretHashed) throw new UnauthorizedException();
-    const secret = this.crypto.decryption(secretHashed);
-    const isValid = await this.twoFA.verifyCode(code, secret);
-    if (isValid) {
-      const { hashedCodes, backupCodes } =
-        await this.twoFA.generateBackupCodes();
-      await this.userRepo.updateOne(
-        { id: user.id, isTwoFA: false },
-        {
-          isTwoFA: true,
-          secret: this.crypto.encryption(secret),
-          BackupCodes: hashedCodes,
-        },
+    if (user.isTwoFA) return { message: '2FA is already enable' };
+    const secretEncrypted = await redis.get(redisKeys.secret(user.email));
+    if (!secretEncrypted) {
+      throw new UnauthorizedException(
+        '2FA setup session has expired. Please try setup again.',
       );
-      return {
-        message: '2FA is enabled ,please save this codes',
-        data: { backupCodes },
-      };
-    } else return { message: 'code is incorrect' };
+    }
+    const secret = this.crypto.decryption(secretEncrypted);
+    const isValid = await this.twoFA.verifyCode(code, secret);
+    if (!isValid) {
+      throw new BadRequestException('Invalid authentication code');
+    }
+    const { hashedCodes, backupCodes } = await this.twoFA.generateBackupCodes();
+    const userFound = await this.userRepo.updateOne(
+      { id: user.id, isTwoFA: false },
+      {
+        isTwoFA: true,
+        secret: secretEncrypted,
+        BackupCodes: hashedCodes,
+      },
+    );
+    if (!userFound) throw new BadRequestException('2FA is already enabled');
+    await redis.del(redisKeys.secret(user.email));
+    return {
+      message:
+        '2FA enabled successfully. Please save these backup codes in a secure place.',
+      data: { backupCodes },
+    };
   };
-
   logout = async (req: Request, res: Response) => {
     const token = req.cookies.refreshToken;
     const accessToken = req.headers['authorization']?.split(' ')[1];
@@ -176,7 +182,7 @@ export class ProfileService {
       redisKeys.token_blackList(accessToken as string),
       '0',
       'EX',
-    TTL.token_blackList
+      TTL.token_blackList,
     );
     res.clearCookie('refreshToken');
     return;
@@ -200,7 +206,7 @@ export class ProfileService {
       redisKeys.token_blackList(accessToken as string),
       '0',
       'EX',
-      TTL.token_blackList
+      TTL.token_blackList,
     );
     res.clearCookie('refreshToken');
     return;

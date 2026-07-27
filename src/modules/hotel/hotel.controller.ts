@@ -118,14 +118,17 @@ export class HotelController {
     return await this.hotelService.getHotelFacilities(hotelId);
   }
 
-  @Get('rooms/:roomId/facilities')
+  @Get(':hotelId/rooms/:roomCode/facilities')
   @ApiOperation({ summary: 'Get facilities for a room' })
   @ApiParam({ name: 'roomId', type: Number, description: 'Room ID' })
   @ApiResponse({
     status: 200,
     description: 'Room facilities fetched successfully',
   })
-  async roomFacilities(@Param('roomId', ParseIntPipe) roomId: number) {
-    return await this.hotelService.getRoomFacilities(roomId);
+  async roomFacilities(
+    @Param('hotelId', ParseIntPipe) hotelId: number,
+    @Param('roomCode') roomCode: string,
+  ) {
+    return await this.hotelService.getRoomFacilities(roomCode, hotelId);
   }
 }

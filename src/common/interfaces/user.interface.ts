@@ -7,6 +7,7 @@ export interface IUser {
   name: string;
   customer_id?: string;
   city: string;
+  isTwoFA?:boolean
   street: string;
   phone: string;
   photo?: string;

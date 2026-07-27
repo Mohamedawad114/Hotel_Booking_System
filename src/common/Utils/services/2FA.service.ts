@@ -4,6 +4,8 @@ import { redis, redisKeys, TTL } from './redis';
 import * as qr from 'qrcode';
 import { HashingService } from '../Hashing/hash.service';
 import { randomBytes } from 'crypto';
+import { Injectable } from '@nestjs/common';
+@Injectable()
 export class TwoFAService {
   constructor(
     private readonly crypto: CryptoService,

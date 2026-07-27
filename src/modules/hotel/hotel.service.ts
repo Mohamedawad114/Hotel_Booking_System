@@ -22,7 +22,7 @@ import { SearchHotelsDto } from './Dto/search.dto';
 import { QueryDto } from './Dto/query.dto';
 import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
-import { type IHotel } from 'src/common/interfaces';
+import { IHotelFacilities, IRoom, IRoomFacilities, type IHotel } from 'src/common/interfaces';
 import { searchRoomsDto } from './Dto/searchRooms.dto';
 
 @Injectable()
@@ -158,13 +158,17 @@ export class HotelServices implements OnModuleInit {
     );
     return res;
   }
-  async getRoomFacilities(roomId: number) {
-    if (!roomId) throw new BadRequestException('room id is required');
-    const cached = await redis.get(redisKeys.roomFacilities(roomId));
+  async getRoomFacilities(roomCode: string, hotelId: number) {
+    if (!roomCode && !hotelId)
+      throw new BadRequestException('room id is required');
+    const cached = await redis.get(redisKeys.roomFacilities(roomCode, hotelId));
     if (cached) return JSON.parse(cached);
-    const room = await this.roomRepo.findById(roomId, {
-      select: { id: true, code: true },
-    });
+    const room = await this.roomRepo.findUnique(
+      { code: roomCode, hotelId },
+      {
+        select: { id: true, code: true },
+      },
+    );
     if (!room) throw new NotFoundException('room not found');
     const facilities = await this.roomFacilityRepo.findMany({
       code: room.code,
@@ -175,20 +179,19 @@ export class HotelServices implements OnModuleInit {
       data: facilities,
     };
     await redis.setex(
-      redisKeys.roomFacilities(roomId),
+      redisKeys.roomFacilities(roomCode, hotelId),
       TTL.roomFacilities,
       JSON.stringify(res),
     );
     return res;
   }
   async updateHotelsData(data: {
-    allHotels: any[];
-    allHotelFacilities: any[];
-    allRooms: any[];
-    allRoomFacilities: any[];
+    allHotels: IHotel[];
+    allHotelFacilities: IHotelFacilities[];
+    allRooms: IRoom[];
+    allRoomFacilities: IRoomFacilities[];
   }): Promise<void> {
     this.logger.info(`بدء تحديث ${data.allHotels.length} فندق في الداتابيز...`);
-
     await this.batchUpsert(
       data.allHotels,
       (hotel) => this.hotelRepo.upsert(hotel, { code: hotel.code }),
@@ -245,7 +248,6 @@ export class HotelServices implements OnModuleInit {
         );
         return;
       }
-
       const validFacilities = await this.facilityRepo.findMany(
         {},
         {
@@ -300,7 +302,6 @@ export class HotelServices implements OnModuleInit {
   ): Promise<void> {
     let succeeded = 0;
     let failed = 0;
-
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
       const results = await Promise.allSettled(batch.map(upsertFn));

@@ -54,8 +54,8 @@ export class TokenServices {
   VerifyAccessToken = (Token: string): IDecodedToken => {
     try {
       return this.Jwt.verify(Token);
-    } catch (error) {
-      throw new UnauthorizedException('Invalid access token or token expired');
+    } catch (error:any) {
+      throw new UnauthorizedException('Invalid access token or token expired',error);
     }
   };
   VerifyRefreshToken = (Token: string): IDecodedToken => {

@@ -13,7 +13,6 @@ export class LoggingInterceptor implements NestInterceptor {
   constructor(private readonly logger: PinoLogger) {}
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     this.logger.info('Before...');
-
     const now = Date.now();
     return next
       .handle()
