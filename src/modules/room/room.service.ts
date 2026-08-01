@@ -6,23 +6,26 @@ import {
 import {
   decoderCursor,
   encodedCursor,
+  HotelbedsProvider,
   redis,
   redisKeys,
   RoomFacilityRepository,
   RoomRepository,
   TTL,
 } from 'src/common';
-import { searchRoomsDto } from './Dto/searchRooms.dto';
+import { SearchRoomsDto } from './Dto/searchRooms.dto';
+import { SearchAvailabilityDto } from './Dto/checkAvailability.dto';
 
 @Injectable()
 export class RoomServices {
   constructor(
     private readonly roomRepo: RoomRepository,
     private readonly roomFacilityRepo: RoomFacilityRepository,
+    private readonly hotelProvider: HotelbedsProvider,
   ) {}
   async getHotelRooms(
     hotelId: number,
-    filter: searchRoomsDto,
+    filter: SearchRoomsDto,
     cursor?: string,
     limit?: number,
   ) {
@@ -83,5 +86,23 @@ export class RoomServices {
       JSON.stringify(res),
     );
     return res;
+  }
+  async searchAvailability(
+    hotelCode: number,
+    dto: SearchAvailabilityDto,  ) {
+    const cacheKey = redisKeys.availability(hotelCode, dto);
+    const cached = await redis.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+    const result = await this.hotelProvider.checkAvailability(
+      hotelCode,
+      dto,
+
+    );
+    const res = {
+      message: 'rooms availability',
+      data: result,
+    };
+    await redis.setex(cacheKey, TTL.availability, JSON.stringify(res));
+    return result;
   }
 }

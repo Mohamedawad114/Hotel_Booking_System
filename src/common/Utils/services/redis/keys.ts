@@ -1,4 +1,5 @@
 import { SortingHotelsDto } from 'src/modules/hotel/Dto/search.dto';
+import { SearchAvailabilityDto } from 'src/modules/room/Dto/checkAvailability.dto';
 
 export const redisKeys = {
   refreshToken: (userId: number, jti?: string) =>
@@ -26,6 +27,8 @@ export const redisKeys = {
   hotelFacilities: (hotelId: number) => `hotelFacilities: ${hotelId}`,
   roomFacilities: (roomCode: string, hotelId: number) =>
     `roomFacilities: ${roomCode}_${hotelId}`,
+  availability: (hotelId: number, dto: SearchAvailabilityDto) =>
+    `hotel:${hotelId} :checkIn:${dto.checkIn.toISOString()}:checkOut:${dto.checkOut.toISOString()}:adults:${dto.adults}:children:${dto.children}`,
   // chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
 };
 
@@ -41,4 +44,5 @@ export const TTL = {
   hotelRooms: 60 * 60 * 24,
   hotelFacilities: 60 * 60 * 24 * 30,
   roomFacilities: 60 * 60 * 24 * 30,
+  availability: 60 * 2,
 };

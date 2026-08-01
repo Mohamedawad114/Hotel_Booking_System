@@ -1,6 +1,6 @@
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString, Length } from 'class-validator';
 
-export class searchRoomsDto {
+export class SearchRoomsDto {
   @IsInt()
   @IsOptional()
   children?: number;
@@ -10,7 +10,8 @@ export class searchRoomsDto {
   @IsString()
   @IsOptional()
   description?: string;
-  @IsInt()
+  @IsString()
   @IsOptional()
-  roomsCount?: number;
+  @Length(1, 3)
+  roomsType?: string;
 }

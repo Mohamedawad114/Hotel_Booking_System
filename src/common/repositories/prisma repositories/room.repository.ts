@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { IHotelCursor, IRoom } from 'src/common/interfaces';
 import { PinoLogger } from 'nestjs-pino';
-import { searchRoomsDto } from 'src/modules/room/Dto/searchRooms.dto';
+import { SearchRoomsDto } from 'src/modules/room/Dto/searchRooms.dto';
 
 @Injectable()
 export class RoomRepository extends BaseRepository<
@@ -20,7 +20,7 @@ export class RoomRepository extends BaseRepository<
   }
   async getHotelRooms(
     hotelId: number,
-    filter?: searchRoomsDto,
+    filter?: SearchRoomsDto,
     query?: IHotelCursor,
   ): Promise<IRoom[]> {
     try {
@@ -41,6 +41,11 @@ export class RoomRepository extends BaseRepository<
       if (filter?.description) {
         whereConditions.push(
           Prisma.sql`description ILIKE ${'%' + filter.description + '%'}`,
+        );
+      }
+      if (filter?.roomsType) {
+        whereConditions.push(
+          Prisma.sql`"roomType" ILIKE ${'%' + filter.roomsType + '%'}`,
         );
       }
       if (filter?.children) {
@@ -64,7 +69,6 @@ export class RoomRepository extends BaseRepository<
       ORDER BY "createdAt" ASC, id ASC 
       LIMIT ${limit};
     `;
-
       return rooms;
     } catch (error: any) {
       this.logger.error(`فشل جلب غرف الفندق ${hotelId}: ${error.message}`);

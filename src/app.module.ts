@@ -22,6 +22,7 @@ import {
   FavoriteModule,
   ProfileModule,
   ReviewModule,
+  RoomModule,
 } from './modules';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullBoardModule } from '@bull-board/nestjs';
@@ -67,6 +68,7 @@ import { ExpressAdapter } from '@bull-board/express';
     DestinationModule,
     FacilityModule,
     HotelModule,
+    RoomModule,
     FavoriteModule,
     ReviewModule,
   ],

@@ -12,6 +12,7 @@ import {
   IRoomFacilities,
 } from 'src/common/interfaces';
 import { IHotel, IHotelPhone, IProviderService } from 'src/common/interfaces';
+import { SearchAvailabilityDto } from 'src/modules/room/Dto/checkAvailability.dto';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;
@@ -84,7 +85,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       throw error;
     }
   }
-  async getFacilities():Promise<IFacility[]>{
+  async getFacilities(): Promise<IFacility[]> {
     try {
       const facilities: IFacility[] = [];
       const response = await firstValueFrom(
@@ -222,6 +223,37 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
     } catch (error: any) {
       this.logger.error(`فشل جلب الـ hotels: ${error.message}`);
       throw error;
+    }
+  }
+
+  async checkAvailability(hotelCode: number, dto: SearchAvailabilityDto) {
+    try {
+      const payload = {
+        stay: {
+          checkIn: dto.checkIn,
+          checkOut: dto.checkOut,
+        },
+        occupancies: [
+          {
+            rooms: 1,
+            adults: dto.adults,
+            children: dto.children,
+          },
+        ],
+        hotels: {
+          hotel: hotelCode,
+        },
+      };
+      const response$ = this.httpService.post(
+        '/hotel-content-api/1.0/hotels',
+        payload,
+      );
+      const response = await firstValueFrom(response$);
+      const availabilityData = response.data?.hotels?.hotels;
+      return availabilityData;
+    } catch (err) {
+      this.logger.error("can't check availability", err);
+      throw err;
     }
   }
   private extractRoomData(hotelCode: number, apiRooms: any[]) {
