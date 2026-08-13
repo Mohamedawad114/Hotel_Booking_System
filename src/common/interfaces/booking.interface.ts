@@ -39,11 +39,15 @@ export interface IBooking extends IConfirmBookingResult {
   cancellationReference: string;
   cancellationFees: number;
 }
-export interface IConfirmBookingInput {
-  hotelCode: number;
-  clientReference: string;
-  checkIn: Date;
-  checkOut: Date;
-  rooms: IBookingRooms[];
-  holder: IHolderInfo;
+// export interface IConfirmBookingInput {
+//   hotelCode: number;
+//   clientReference: string;
+//   checkIn: Date;
+//   checkOut: Date;
+//   rooms: IBookingRooms[];
+//   holder: IHolderInfo;
+// }
+export interface ICancelBookingData {
+  refundAmount: number;
+  cancellationFee: number;
 }

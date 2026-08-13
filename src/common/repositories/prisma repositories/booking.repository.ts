@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BaseRepository } from './base.repository';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
-import { IConfirmBookingResult } from 'src/common/interfaces';
+import { ICancelBookingData, IConfirmBookingResult } from 'src/common/interfaces';
 
 @Injectable()
 export class BookingRepository extends BaseRepository
@@ -49,4 +49,5 @@ export class BookingRepository extends BaseRepository
       return booking;
     });
   }
+  async cancelWithRefund(bookingId:number,data:ICancelBookingData){}
 }

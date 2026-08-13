@@ -1,7 +1,7 @@
 import { NotificationTitle } from "../enums/notification.enum"
 
 export interface INotification{
-    id?:number,
+    _id?:number,
     title: NotificationTitle,
     content: string
     isRead:boolean

@@ -318,7 +318,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
           })),
         })),
         holder: params.holder,
-        paymentType: this.config.get<string>("PAYMENT_TYPE")
+        paymentType: this.config.get<string>('PAYMENT_TYPE'),
       };
       const response = await firstValueFrom(
         this.httpService.post('/hotel-api/1.0/bookings', payload),
@@ -365,7 +365,8 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
     return {
       success: true,
       cancellationReference: data.booking?.cancellationReference,
-      cancellationFee: Number(data.booking?.cancellationFees ?? 0), // قيمة الغرامة التي فرضها الـ Provider
+      refundAmount: Number(data.cancellationAmount?.refund ?? 0),
+      cancellationFee: Number(data.booking?.cancellationFees ?? 0),
     };
   }
   private extractRoomData(hotelCode: number, apiRooms: any[]) {

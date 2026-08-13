@@ -19,7 +19,7 @@ export class EmailWorker extends WorkerHost {
   }
 
   async process(job: Job) {
-    const { to, bookingNumber, data } = job.data;
+    const { to, data } = job.data;
     let emailHtml: string;
     let emailSubject: emailType;
     switch (job.name) {
@@ -40,7 +40,18 @@ export class EmailWorker extends WorkerHost {
         emailSubject = emailType.confirmation;
         break;
       case emailType.canceledBooking:
-        emailHtml = this.emailServices.canceledBookingEmail(bookingNumber);
+        emailHtml = this.emailServices.canceledBookingEmail(
+          data.bookingNumber,
+          data.hotelName,
+        );
+        emailSubject = emailType.canceledBooking;
+        break;
+      case emailType.canceledBookingWithRefund:
+        emailHtml = this.emailServices.canceledBookingWithRefundEmail(
+          data.bookingNumber,
+          data.hotelName,
+          data.refundAmount,
+        );
         emailSubject = emailType.canceledBooking;
         break;
       default:

@@ -32,6 +32,7 @@ export const redisKeys = {
   selectionRooms: (hotelCode: number, userId: number) =>
     `selection:${hotelCode}:${userId}`,
   userLock: (userId: number) => `userLocked:${userId}`,
+  hotelName: (bookingId: number) => ` bookingId:${bookingId}=>hotelName`,
   // chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
 };
 
@@ -51,4 +52,5 @@ export const TTL = {
   userLock: 60 * 5,
   idempotencyKey: 60 * 5,
   selectionRooms: 60 * 10,
+  hotelName: 60 * 15,
 };

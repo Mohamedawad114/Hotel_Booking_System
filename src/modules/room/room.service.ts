@@ -84,5 +84,4 @@ export class RoomServices {
     );
     return res;
   }
-
 }

@@ -6,22 +6,23 @@ import {
 import { NotificationRepository } from 'src/common/repositories/mongoose';
 import { IUser } from 'src/common/interfaces';
 import { decoderCursor, encodedCursor } from 'src/common';
+import { INotification } from 'src/common/interfaces/notification.interface';
 
 @Injectable()
 export class NotificationService {
   constructor(private readonly notificationRepo: NotificationRepository) {}
-
   async getNotifications(user: IUser, cursor?: string, limit = 20) {
     if (!user || !user.id) throw new BadRequestException('user is required');
     const cursorDecoded = decoderCursor(cursor);
     const filter: any = { userId: user.id };
     if (cursorDecoded?.value) {
-      filter.createdAt = { $lt: new Date(cursorDecoded.value) };
+      ((filter.createdAt = { $lt: new Date(cursorDecoded.value) }),
+        (filter._id = { $lt: cursorDecoded.id }));
     }
     const notifications = await this.notificationRepo.findDocuments(
       filter,
       {},
-      { sort: { createdAt: -1 }, limit },
+      { sort: { createdAt: -1, id: -1 }, limit },
     );
     if (!notifications || !notifications.length)
       return { message: 'no notifications', data: [] };
@@ -30,6 +31,11 @@ export class NotificationService {
       id: (lastItem._id || '').toString(),
       value: lastItem.createdAt,
     });
+    const ids = notifications.map((n) => n._id);
+    await this.notificationRepo.updateManyDocuments(
+      { _id: { $in: ids }, isRead: false },
+      { isRead: true },
+    );
     return { message: 'notifications', data: notifications, meta: nextCursor };
   }
 }

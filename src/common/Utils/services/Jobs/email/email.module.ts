@@ -15,7 +15,7 @@ import { HttpModule } from '@nestjs/axios';
       name: 'email',
       adapter: BullMQAdapter,
     }),
-    HttpModule
+    HttpModule,
   ],
   providers: [EmailProducer, EmailWorker, EmailServices, HashingService],
   exports: [EmailProducer],

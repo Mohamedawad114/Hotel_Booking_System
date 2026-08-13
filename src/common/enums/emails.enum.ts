@@ -5,4 +5,5 @@ export enum emailType {
   createdBooking = 'createdBooking',
   confirmedBooking = 'confirmedBooking',
   canceledBooking = 'canceledBooking',
+  canceledBookingWithRefund = 'canceledBookingWithRefund',
 }

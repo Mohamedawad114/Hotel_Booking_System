@@ -301,7 +301,7 @@ export class EmailServices {
     </html>
   `;
   };
-  canceledBookingEmail = (bookingNumber:string) => {
+  canceledBookingEmail = (bookingNumber: string, hotelName: string) => {
     return `
     <!DOCTYPE html>
     <html>
@@ -322,24 +322,41 @@ export class EmailServices {
               Your hotel booking has been
               <strong style="color:#dc2626;">canceled successfully</strong>.
             </p>
-            <!-- Booking Number -->
-            <div style="background:#fef2f2;padding:20px;border-radius:8px;margin:25px 0;border:1px solid #fecaca;text-align:center;">
-              <p style="margin:0;color:#64748b;font-size:13px;">
-                Canceled Booking Number
-              </p>
-              <p style="margin:8px 0 0;font-size:24px;font-weight:bold;color:#dc2626;">
-                #${bookingNumber}
-              </p>
-            </div>
+            <!-- Cancellation Details -->
+            <h3 style="color:#1e293b;border-bottom:1px solid #e5e7eb;padding-bottom:10px;">
+              Cancellation Details
+            </h3>
+            <table style="width:100%;border-collapse:collapse;">
+              <!-- Hotel Name -->
+              <tr>
+                <td style="padding:10px 0;color:#64748b;">
+                  Hotel
+                </td>
+                <td style="padding:10px 0;text-align:right;font-weight:bold;color:#1e293b;">
+                  ${hotelName}
+                </td>
+              </tr>
+              <!-- Booking Number -->
+              <tr>
+                <td style="padding:10px 0;color:#64748b;">
+                  Booking Number
+                </td>
+                <td style="padding:10px 0;text-align:right;font-weight:bold;color:#dc2626;">
+                  #${bookingNumber}
+                </td>
+              </tr>
+            </table>
             <!-- Cancellation Status -->
             <div style="text-align:center;margin:25px 0;">
               <span style="display:inline-block;padding:12px 25px;background:#fee2e2;color:#b91c1c;border-radius:30px;font-weight:bold;">
                 ✕ CANCELED
               </span>
             </div>
+            <!-- Information -->
             <div style="margin-top:25px;padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
               <p style="margin:0;color:#475569;font-size:14px;line-height:1.6;">
-                Your reservation has been successfully canceled.
+                Your reservation at <strong>${hotelName}</strong> has been
+                successfully canceled.
                 Please keep this email for your records.
               </p>
             </div>
@@ -348,6 +365,109 @@ export class EmailServices {
           <div style="background:#f8fafc;padding:20px;text-align:center;">
             <p style="margin:0;font-size:12px;color:#94a3b8;">
               If you have any questions, please contact our support team.
+            </p>
+            <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">
+              © 2026 Hotel Booking System. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+  };
+  canceledBookingWithRefundEmail = (
+    bookingNumber: string,
+    hotelName: string,
+    refundAmount: number,
+  ) => {
+    return `
+    <!DOCTYPE html>
+    <html>
+      <body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#333;">
+        <div style="max-width:650px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.08);">
+          <!-- Header -->
+          <div style="background:#dc2626;padding:25px;text-align:center;">
+            <h1 style="color:#fff;margin:0;font-size:26px;">
+              Booking Canceled
+            </h1>
+          </div>
+          <!-- Content -->
+          <div style="padding:30px;">
+            <p style="font-size:16px;margin-top:0;">
+              Hello,
+            </p>
+            <p style="font-size:15px;color:#555;line-height:1.6;">
+              Your hotel booking has been
+              <strong style="color:#dc2626;">canceled successfully</strong>.
+            </p>
+
+            <!-- Cancellation Details -->
+            <h3 style="color:#1e293b;border-bottom:1px solid #e5e7eb;padding-bottom:10px;">
+              Cancellation Details
+            </h3>
+            <table style="width:100%;border-collapse:collapse;">
+              <!-- Hotel -->
+              <tr>
+                <td style="padding:10px 0;color:#64748b;">
+                  Hotel
+                </td>
+                <td style="padding:10px 0;text-align:right;font-weight:bold;color:#1e293b;">
+                  ${hotelName}
+                </td>
+              </tr>
+              <!-- Booking Number -->
+              <tr>
+                <td style="padding:10px 0;color:#64748b;">
+                  Booking Number
+                </td>
+                <td style="padding:10px 0;text-align:right;font-weight:bold;color:#dc2626;">
+                  #${bookingNumber}
+                </td>
+              </tr>
+              <!-- Refund Amount -->
+              <tr>
+                <td style="padding:10px 0;color:#64748b;">
+                  Refund Amount
+                </td>
+                <td style="padding:10px 0;text-align:right;font-size:18px;font-weight:bold;color:#16a34a;">
+                  ${refundAmount} 
+                </td>
+              </tr>
+            </table>
+            <!-- Cancellation Status -->
+            <div style="text-align:center;margin:25px 0;">
+              <span style="display:inline-block;padding:12px 25px;background:#fee2e2;color:#b91c1c;border-radius:30px;font-weight:bold;">
+                ✕ CANCELED
+              </span>
+            </div>
+            <!-- Refund Information -->
+            <div style="margin-top:25px;padding:18px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;">
+              <p style="margin:0 0 8px;color:#047857;font-size:16px;font-weight:bold;">
+                Refund Processed
+              </p>
+              <p style="margin:0;color:#065f46;font-size:14px;line-height:1.6;">
+                A refund of
+                <strong>${refundAmount}</strong>
+                has been processed for your canceled reservation.
+                The amount will be returned to your original payment method
+                according to your payment provider's processing time.
+              </p>
+            </div>
+            <!-- Information -->
+            <div style="margin-top:15px;padding:15px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+              <p style="margin:0;color:#475569;font-size:14px;line-height:1.6;">
+                Your reservation at <strong>${hotelName}</strong> has been
+                successfully canceled.
+                Please keep this email and your booking number for your records.
+              </p>
+            </div>
+
+          </div>
+          <!-- Footer -->
+          <div style="background:#f8fafc;padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#94a3b8;">
+              If you have any questions regarding your refund or cancellation,
+              please contact our support team.
             </p>
             <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">
               © 2026 Hotel Booking System. All rights reserved.

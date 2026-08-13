@@ -6,7 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { resolve } from 'path';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
-import { CommonModule, PrismaModule,redis } from './common';
+import { CommonModule, PrismaModule, redis } from './common';
 import { LoggerModule } from 'nestjs-pino';
 import { GlobalErrFilter } from './common/guards';
 import {
@@ -73,7 +73,7 @@ import { BookingModule } from './modules/booking/booking.module';
     FavoriteModule,
     ReviewModule,
     BookingModule,
-    NotificationModule
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

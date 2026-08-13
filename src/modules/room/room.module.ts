@@ -1,8 +1,5 @@
 import { Module } from '@nestjs/common';
-import {
-  RoomFacilityRepository,
-  RoomRepository,
-} from 'src/common';
+import { RoomFacilityRepository, RoomRepository } from 'src/common';
 import { RoomServices } from './room.service';
 import { RoomController } from './room.controller';
 

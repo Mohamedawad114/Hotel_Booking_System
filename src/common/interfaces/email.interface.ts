@@ -5,3 +5,8 @@ export interface ICreatedBookingEmail {
   checkIn: string;
   checkOut: string;
 }
+export interface ICancelBookingEmail {
+  bookingNumber: string;
+  hotelName: string;
+  refundAmount?:number;
+}

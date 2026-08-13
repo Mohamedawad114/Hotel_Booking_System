@@ -4,7 +4,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { CommandHandler, EventBus } from '@nestjs/cqrs';
+import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { BookingCommand } from '../booking.command';
 import {
   BookingRepository,
@@ -18,7 +18,7 @@ import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 @CommandHandler(BookingCommand)
-export class BookingHandler {
+export class BookingHandler implements ICommandHandler<BookingCommand> {
   constructor(
     private readonly providerServices: HotelbedsProvider,
     private readonly bookingRepository: BookingRepository,
@@ -44,11 +44,7 @@ export class BookingHandler {
     let providerBooking: boolean = false;
     let lockKey: string | undefined;
     try {
-      lockKey = redisKeys.idempotencyKey(
-        user.id,
-        hotelCode,
-        idempotencyKey,
-      );
+      lockKey = redisKeys.idempotencyKey(user.id, hotelCode, idempotencyKey);
       const lockAcquired = await redis.set(
         lockKey,
         'processing',
@@ -130,7 +126,7 @@ export class BookingHandler {
           'booking confirmed but failed to save, please contact support',
         );
       }
-    if (lockKey) await redis.del(lockKey);
+      if (lockKey) await redis.del(lockKey);
       throw err;
     } finally {
       await redis.del(userLockKey);
