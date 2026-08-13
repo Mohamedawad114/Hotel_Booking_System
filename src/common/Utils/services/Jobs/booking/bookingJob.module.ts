@@ -3,9 +3,9 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { BookingJobProducer } from './bookingJob.producer';
-import { ProviderModule } from '../../hotel provider/provider.module';
 import { BookingJobProcessor } from './bookingJob.processor';
 import { BookingRepository } from 'src/common/repositories/prisma repositories';
+import { BookingService } from 'src/modules/booking/booking.service';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { BookingRepository } from 'src/common/repositories/prisma repositories';
       adapter: BullMQAdapter,
     }),
   ],
-  providers: [BookingJobProducer, BookingJobProcessor, BookingRepository],
+  providers: [BookingJobProducer, BookingJobProcessor, BookingRepository,BookingService],
   exports: [BookingJobProducer],
 })
 export class BookingJobModule {}

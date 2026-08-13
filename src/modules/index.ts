@@ -5,4 +5,5 @@ export * from './hotel/hotel.module';
 export * from './facility/facility.module';
 export * from './favorite/favorite.module';
 export * from './review/review.module';
-export* from './room/room.module'
+export * from './room/room.module';
+export * from './notification/notification.module';

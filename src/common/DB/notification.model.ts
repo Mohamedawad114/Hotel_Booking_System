@@ -15,7 +15,7 @@ export class Notification implements INotification {
 
   isRead!:boolean
 }
-const notificationSchema = SchemaFactory.createForClass<Notification>;
+const notificationSchema = SchemaFactory.createForClass(Notification);
 export type notificationDocument = HydratedDocument<Notification>;
 export const notificationModel = MongooseModule.forFeature([
   {

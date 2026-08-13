@@ -13,12 +13,10 @@ import {
   IHotel,
   IHotelPhone,
   IProviderService,
-  IConfirmBookingResult,
-  IConfirmBookingInput,
   IBookingRooms,
 } from 'src/common/interfaces';
-import { SearchAvailabilityDto } from 'src/modules/room/Dto/checkAvailability.dto';
 import { BookingDto } from 'src/modules/booking/dto/booking.dto';
+import { SearchAvailabilityDto } from 'src/modules/booking/dto/checkAvailability.dto';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;

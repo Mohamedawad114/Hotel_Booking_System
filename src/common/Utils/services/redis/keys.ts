@@ -1,5 +1,5 @@
+import { SearchAvailabilityDto } from 'src/modules/booking/dto/checkAvailability.dto';
 import { SortingHotelsDto } from 'src/modules/hotel/Dto/search.dto';
-import { SearchAvailabilityDto } from 'src/modules/room/Dto/checkAvailability.dto';
 
 export const redisKeys = {
   refreshToken: (userId: number, jti?: string) =>
