@@ -3,38 +3,58 @@ import { Job } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import { emailType } from 'src/common/enums';
 import { EmailServices } from './mail.service';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+import { firstValueFrom } from 'rxjs';
 
-@Processor('email')
+@Processor('email', { limiter: { duration: 1000, max: 8 } })
 export class EmailWorker extends WorkerHost {
   constructor(
     private readonly logger: PinoLogger,
     private readonly emailServices: EmailServices,
+    private readonly httpService: HttpService,
+    private readonly config: ConfigService,
   ) {
     super();
   }
 
   async process(job: Job) {
-    const { to,data } = job.data;
+    const { to, bookingNumber, data } = job.data;
+    let emailHtml: string;
+    let emailSubject: emailType;
     switch (job.name) {
       case emailType.confirmation:
-        await this.emailServices.createAndSendOTP(to);
+        emailHtml = await this.emailServices.createAndSendOTP(to);
+        emailSubject = emailType.confirmation;
         break;
       case emailType.resetPassword:
-        await this.emailServices.createAndSendOTP_password(to);
+        emailHtml = await this.emailServices.createAndSendOTP_password(to);
+        emailSubject = emailType.resetPassword;
         break;
       case emailType.BanedUser:
-        await this.emailServices.bannedUser_email();
+        emailHtml = this.emailServices.bannedUser_email();
+        emailSubject = emailType.BanedUser;
         break;
       case emailType.createdBooking:
-        await this.emailServices.createdBookingEmail(data);
+        emailHtml = this.emailServices.createdBookingEmail(data);
+        emailSubject = emailType.confirmation;
         break;
-      // case emailType.confirmedBooking:
-      //   await this.emailServices.confirmedBookingEmail();
-      //   break;
+      case emailType.canceledBooking:
+        emailHtml = this.emailServices.canceledBookingEmail(bookingNumber);
+        emailSubject = emailType.canceledBooking;
+        break;
       default:
         this.logger.warn(`Unknown job type: ${job.name}`);
         throw new Error('Unknown job type');
     }
+    const n8nResponse = await firstValueFrom(
+      this.httpService.post(this.config.getOrThrow<string>('N8N_URL'), {
+        email: to,
+        emailHtml,
+        emailSubject,
+      }),
+    );
+    this.logger.info(`email have send successfully :${n8nResponse}`);
   }
 
   @OnWorkerEvent('completed')

@@ -6,6 +6,7 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { EmailServices } from './mail.service';
 import { HashingService } from 'src/common/Utils/Hashing/hash.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { HashingService } from 'src/common/Utils/Hashing/hash.service';
       name: 'email',
       adapter: BullMQAdapter,
     }),
+    HttpModule
   ],
   providers: [EmailProducer, EmailWorker, EmailServices, HashingService],
   exports: [EmailProducer],

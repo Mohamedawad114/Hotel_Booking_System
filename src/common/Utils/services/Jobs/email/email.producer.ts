@@ -9,17 +9,19 @@ export class EmailProducer {
   sendEmailJob = async (
     type: string,
     to: string,
-    data?:ICreatedBookingEmail
+    bookingNumber?: string,
+    data?: ICreatedBookingEmail,
   ) => {
     await this.emailQueue.add(
       type,
       {
         to,
-        data
+        data,
+        bookingNumber,
       },
       {
         attempts: 3,
-        delay:2000,
+        delay: 2000,
         removeOnFail: false,
         removeOnComplete: true,
       },
