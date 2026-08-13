@@ -2,9 +2,10 @@ import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { EmailProducer } from './email.producer';
 import { EmailWorker } from './email.processor';
-import { MailModule } from '../../mailService/mail.module';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
+import { EmailServices } from './mail.service';
+import { HashingService } from 'src/common/Utils/Hashing/hash.service';
 
 @Module({
   imports: [
@@ -13,9 +14,8 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
       name: 'email',
       adapter: BullMQAdapter,
     }),
-    MailModule,
   ],
-  providers: [EmailProducer, EmailWorker],
+  providers: [EmailProducer, EmailWorker, EmailServices, HashingService],
   exports: [EmailProducer],
 })
 export class EmailModule {}

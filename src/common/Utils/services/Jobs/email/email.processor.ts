@@ -1,8 +1,8 @@
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
-import { EmailServices } from '../../mailService/mail.service';
 import { emailType } from 'src/common/enums';
+import { EmailServices } from './mail.service';
 
 @Processor('email')
 export class EmailWorker extends WorkerHost {
@@ -14,7 +14,7 @@ export class EmailWorker extends WorkerHost {
   }
 
   async process(job: Job) {
-    const { to } = job.data;
+    const { to,data } = job.data;
     switch (job.name) {
       case emailType.confirmation:
         await this.emailServices.createAndSendOTP(to);
@@ -23,8 +23,14 @@ export class EmailWorker extends WorkerHost {
         await this.emailServices.createAndSendOTP_password(to);
         break;
       case emailType.BanedUser:
-        await this.emailServices.bannedUser_email(to);
+        await this.emailServices.bannedUser_email();
         break;
+      case emailType.createdBooking:
+        await this.emailServices.createdBookingEmail(data);
+        break;
+      // case emailType.confirmedBooking:
+      //   await this.emailServices.confirmedBookingEmail();
+      //   break;
       default:
         this.logger.warn(`Unknown job type: ${job.name}`);
         throw new Error('Unknown job type');

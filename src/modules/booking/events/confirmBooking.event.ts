@@ -1,4 +1,4 @@
-import { IBooking, IUser } from "src/common/interfaces";
+import {  IUser } from "src/common/interfaces";
 
 export class ConfirmBookingEvent {
   constructor(

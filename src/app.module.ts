@@ -27,6 +27,7 @@ import {
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
+import { BookingModule } from './modules/booking/booking.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -61,7 +62,6 @@ import { ExpressAdapter } from '@bull-board/express';
       },
     }),
     PrismaModule,
-    ProviderModule,
     CommonModule,
     AuthModule,
     ProfileModule,
@@ -71,6 +71,7 @@ import { ExpressAdapter } from '@bull-board/express';
     RoomModule,
     FavoriteModule,
     ReviewModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [

@@ -19,7 +19,6 @@ export interface IHolderInfo {
 }
 export interface IConfirmBookingResult {
   reference: string;
-  status: string;
   totalPrice: number;
   checkIn: Date;
   checkOut: Date;
@@ -39,4 +38,12 @@ export interface IBooking extends IConfirmBookingResult {
   providerReference: string;
   cancellationReference: string;
   cancellationFees: number;
+}
+export interface IConfirmBookingInput {
+  hotelCode: number;
+  clientReference: string;
+  checkIn: Date;
+  checkOut: Date;
+  rooms: IBookingRooms[];
+  holder: IHolderInfo;
 }

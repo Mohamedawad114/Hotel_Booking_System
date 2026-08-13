@@ -8,3 +8,4 @@ export * from './facility.interface';
 export * from './provider.interface';
 export * from './favorite.interface';
 export * from './review.interface';
+export * from './booking.interface';

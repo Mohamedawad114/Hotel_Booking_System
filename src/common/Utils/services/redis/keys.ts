@@ -8,8 +8,8 @@ export const redisKeys = {
   resetPassword: (email: string) => `otp_reset:${email}`,
   token_blackList: (accessToken: string) => `tokens_blacklist:${accessToken}`,
   secret: (email: string) => `${email}_secret`,
-  idempotencyKey: (key: string, op: string, id: number) =>
-    `idempotencyKey:${key}:${op}:${id}`,
+  idempotencyKey: (userId: number, hotelCode: number, key: string) =>
+    `idempotency:${userId}:${hotelCode}:${key}`,
   socketKey: (userId: string) => `user_sockets:${userId}`,
   destination: () => `destinations`,
   facility: () => `facilities`,
@@ -29,6 +29,9 @@ export const redisKeys = {
     `roomFacilities: ${roomCode}_${hotelId}`,
   availability: (hotelId: number, dto: SearchAvailabilityDto) =>
     `hotel:${hotelId} :checkIn:${dto.checkIn.toISOString()}:checkOut:${dto.checkOut.toISOString()}:adults:${dto.adults}:children:${dto.children}`,
+  selectionRooms: (hotelCode: number, userId: number) =>
+    `selection:${hotelCode}:${userId}`,
+  userLock: (userId: number) => `userLocked:${userId}`,
   // chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
 };
 
@@ -45,4 +48,7 @@ export const TTL = {
   hotelFacilities: 60 * 60 * 24 * 30,
   roomFacilities: 60 * 60 * 24 * 30,
   availability: 60 * 2,
+  userLock: 60 * 5,
+  idempotencyKey: 60 * 5,
+  selectionRooms: 60 * 10,
 };

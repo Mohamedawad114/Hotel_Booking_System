@@ -1,4 +1,4 @@
-import { NotificationTitle } from 'src/common/enums';
+import { NotificationTitle } from "src/common/enums/notification.enum";
 
 export const notificationContent = {
   [NotificationTitle.createdBooking]: (

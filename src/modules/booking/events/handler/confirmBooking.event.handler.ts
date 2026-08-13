@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import {
-  BookingJobProducer,
-  EmailProducer,
-  HotelRepository,
-  notificationContent,
-} from 'src/common';
-import { NotificationRepository } from 'src/common/repositories/mongoose';
-import { emailType, NotificationTitle } from 'src/common/enums';
 import { ConfirmBookingEvent } from '../confirmBooking.event';
+import { NotificationRepository } from 'src/common/repositories/mongoose';
+import { BookingJobProducer } from 'src/common/Utils/services/Jobs/booking/bookingJob.producer';
+import { EmailProducer, HotelRepository, notificationContent } from 'src/common';
+import { emailType, NotificationTitle } from 'src/common/enums';
+
 
 @Injectable()
-@EventsHandler(ConfirmBookingEvent)
+@EventsHandler (ConfirmBookingEvent)
 export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent> {
   constructor(
     private readonly bookingQueue: BookingJobProducer,

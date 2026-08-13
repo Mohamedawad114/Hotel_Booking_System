@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { Injectable } from '@nestjs/common';
 import { HashingService, redis, redisKeys, TTL } from 'src/common/Utils';
-import { ICreatedBookingEmail } from 'src/common/interfaces';
+import { ICreatedBookingEmail } from 'src/common/interfaces/email.interface';
 
 const createOTP = customAlphabet(`0123456789zxcvbnmalksjdhfgqwretruop`, 6);
 @Injectable()
@@ -150,13 +150,9 @@ export class EmailServices {
   };
   confirmedBookingEmail = (data: {
     bookingNumber: string;
-    guestName: string;
     hotelName: string;
-    roomName: string;
     checkIn: string;
     checkOut: string;
-    adults: number;
-    children?: number;
     totalPrice: number;
     paymentStatus: string;
     paymentMethod?: string;
@@ -180,9 +176,6 @@ export class EmailServices {
             </p>
           </div>
           <div style="padding:30px;">
-            <p style="font-size:16px;">
-              Hello <strong>${data.guestName}</strong>,
-            </p>
             <p style="font-size:15px;color:#555;line-height:1.6;">
               Your hotel booking has been confirmed successfully.
               Below you can find your booking and payment details.
@@ -219,12 +212,6 @@ export class EmailServices {
                 </td>
               </tr>
 
-              <tr>
-                <td style="padding:9px 0;color:#64748b;">Room</td>
-                <td style="padding:9px 0;text-align:right;">
-                  ${data.roomName}
-                </td>
-              </tr>
 
               <tr>
                 <td style="padding:9px 0;color:#64748b;">Check-in</td>
@@ -238,22 +225,7 @@ export class EmailServices {
                   ${data.checkOut}
                 </td>
               </tr>
-              <tr>
-                <td style="padding:9px 0;color:#64748b;">Adults</td>
-                <td style="padding:9px 0;text-align:right;">
-                  ${data.adults}
-                </td>
-              </tr>
-              ${
-                data.children !== undefined
-                  ? `
-                    <tr>
-                      <td style="padding:9px 0;color:#64748b;">Children</td>
-                      <td style="padding:9px 0;text-align:right;">
-                        ${data.children}
-                      </td>
-                    </tr>
-                  `
+                  
                   : ''
               }
             </table>

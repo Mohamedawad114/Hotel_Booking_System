@@ -1,6 +1,4 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { BookingStatus } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { BookingRepository, HotelbedsProvider } from 'src/common';
@@ -18,20 +16,24 @@ export class BookingService {
       this.logger.error('booking id is required');
       return;
     }
-    const bookingCanceled = await this.providerService.CancelBooking(
-      bookingReference,
+    const bookingCanceled =
+      await this.providerService.CancelBooking(bookingReference);
+    if (bookingCanceled.success && bookingCanceled.cancellationReference) {
+      await this.bookingRepo.updateOne(
+        {
+          userId: userId,
+          providerReference: bookingReference,
+          status: BookingStatus.PENDING,
+        },
+        {
+          status: BookingStatus.CANCELLED,
+          cancellationReference: bookingCanceled.cancellationReference,
+        },
       );
-      if (bookingCanceled.success && bookingCanceled.cancellationReference) {
-       await this.bookingRepo.updateOne({
-         userId: userId,
-         providerReference: bookingReference,
-         status: BookingStatus.PENDING,
-       }, {
-           status: BookingStatus.CANCELLED,
-           cancellationReference:bookingCanceled.cancellationReference
-       });
-          this.logger.info(`booking canceled , cancellationReference :${bookingCanceled.cancellationReference}`)
-          return;
-   }
+      this.logger.info(
+        `booking canceled , cancellationReference :${bookingCanceled.cancellationReference}`,
+      );
+      return;
+    }
   };
 }

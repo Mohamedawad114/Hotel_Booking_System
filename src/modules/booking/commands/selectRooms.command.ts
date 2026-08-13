@@ -1,4 +1,4 @@
-import { IRoomSelection, ISessionData } from 'src/common/interfaces';
+import { ISessionData } from "src/common/interfaces/roomSelect.interface";
 
 export class SelectRoomsCommand {
   constructor(

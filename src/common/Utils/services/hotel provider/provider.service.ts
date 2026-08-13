@@ -10,9 +10,15 @@ import {
   IHotelFacilities,
   IRoom,
   IRoomFacilities,
+  IHotel,
+  IHotelPhone,
+  IProviderService,
+  IConfirmBookingResult,
+  IConfirmBookingInput,
+  IBookingRooms,
 } from 'src/common/interfaces';
-import { IHotel, IHotelPhone, IProviderService } from 'src/common/interfaces';
 import { SearchAvailabilityDto } from 'src/modules/room/Dto/checkAvailability.dto';
+import { BookingDto } from 'src/modules/booking/dto/booking.dto';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;
@@ -255,6 +261,114 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       this.logger.error("can't check availability", err);
       throw err;
     }
+  }
+
+  async checkRates(rateKeys: string[]) {
+    try {
+      const payload = { rooms: rateKeys.map((rateKey) => ({ rateKey })) };
+
+      const response = await firstValueFrom(
+        this.httpService.post('/hotel-api/1.0/checkrates', payload),
+      );
+      const rooms = response.data?.hotel?.rooms || [];
+      return rooms.map((room: any, i: number) => {
+        const rate = room.rates?.[0];
+        return {
+          rateKey: rateKeys[i],
+          newRateKey: rate?.rateKey ?? rateKeys[i],
+          stillAvailable: !!rate,
+          price: rate?.sellingRate ?? 0,
+          priceChanged: rate?.sellingRate !== undefined,
+        };
+      });
+    } catch (err: any) {
+      if (err?.response?.status === 400) {
+        return rateKeys.map((rateKey) => ({
+          rateKey,
+          newRateKey: rateKey,
+          stillAvailable: false,
+          price: 0,
+          priceChanged: false,
+        }));
+      }
+      this.logger.error(`Failed to check rates: ${err.message}`);
+      throw err;
+    }
+  }
+  async confirmBooking(
+    hotelCode: number,
+    clientReference: string,
+    checkIn: Date,
+    checkOut: Date,
+    rooms: IBookingRooms[],
+    params: BookingDto,
+  ) {
+    try {
+      const payload = {
+        hotelCode: hotelCode,
+        checkIn: checkIn.toISOString().split('T')[0],
+        checkOut: checkOut.toISOString().split('T')[0],
+        clientReference: clientReference,
+        rooms: rooms.map((room) => ({
+          rateKey: room.rateKey,
+          adults: room.adultsCount,
+          children: room.childrenCount,
+          guests: room.guests.map((g) => ({
+            firstName: g.firstName,
+            lastName: g.lastName,
+            age: g.age,
+          })),
+        })),
+        holder: params.holder,
+        paymentType: this.config.get<string>("PAYMENT_TYPE")
+      };
+      const response = await firstValueFrom(
+        this.httpService.post('/hotel-api/1.0/bookings', payload),
+      );
+
+      const booking = response.data?.booking;
+      const data = {
+        reference: booking.reference,
+        status: booking.status,
+        totalPrice: booking.totalNet,
+        checkIn: new Date(booking.hotel.checkIn),
+        checkOut: new Date(booking.hotel.checkOut),
+        rooms: (booking.hotel.rooms || []).map((r: any) => {
+          const originalRoom = rooms.find(
+            (reqRoom) => reqRoom.rateKey === r.rateKey,
+          );
+          return {
+            code: r.code,
+            hotelId: hotelCode,
+            rateKey: r.rateKey,
+            price: r.rate?.net ?? 0,
+            adultsCount: originalRoom?.adultsCount ?? 0,
+            childrenCount: originalRoom?.childrenCount ?? 0,
+            guests: originalRoom?.guests || [],
+          };
+        }),
+        holder: params.holder,
+      };
+      return data;
+    } catch (err: any) {
+      this.logger.error(`Failed to confirm booking: ${err.message}`);
+      throw err;
+    }
+  }
+  async CancelBooking(providerReference: string) {
+    const response = await firstValueFrom(
+      this.httpService.delete(`/hotel-api/1.0/bookings/${providerReference}`, {
+        params: {
+          cancellationFlag: 'REAl',
+        },
+      }),
+    );
+    const data = response.data;
+    return {
+      success: true,
+      cancellationReference: data.booking?.cancellationReference,
+      cancellationFee: Number(data.booking?.cancellationFees ?? 0), // قيمة الغرامة التي فرضها الـ Provider
+    };
   }
   private extractRoomData(hotelCode: number, apiRooms: any[]) {
     const rooms: IRoom[] = [];

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { InjectQueue } from '@nestjs/bullmq';
+import { ICreatedBookingEmail } from 'src/common/interfaces/email.interface';
 
 @Injectable()
 export class EmailProducer {
@@ -8,11 +9,13 @@ export class EmailProducer {
   sendEmailJob = async (
     type: string,
     to: string,
+    data?:ICreatedBookingEmail
   ) => {
     await this.emailQueue.add(
       type,
       {
         to,
+        data
       },
       {
         attempts: 3,

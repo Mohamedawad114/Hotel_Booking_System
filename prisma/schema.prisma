@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -39,13 +36,13 @@ model user {
 }
 
 model review {
-  id      Int    @id @default(autoincrement())
-  user    user   @relation(fields: [userId], references: [id])
-  userId  Int
-  hotel   hotel  @relation(fields: [hotelId], references: [id])
-  hotelId Int
-  rating  Int
-  comment String
+  id        Int      @id @default(autoincrement())
+  user      user     @relation(fields: [userId], references: [id])
+  userId    Int
+  hotel     hotel    @relation(fields: [hotelId], references: [id])
+  hotelId   Int
+  rating    Int
+  comment   String
 
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
@@ -66,20 +63,27 @@ model payment {
 }
 
 model booking {
-  id                Int           @id @default(autoincrement())
-  bookingNumber     String        @unique
-  userId            Int
-  providerReference String?       @unique
-  totalPrice        Decimal       @db.Decimal(10, 2) // total price of the booking*/*
-  status            BookingStatus @default(PENDING)
-  checkIn           DateTime      @db.Date
-  checkOut          DateTime      @db.Date
-  rooms             bookingRoom[]
-  payment           payment?
-  user              user          @relation(fields: [userId], references: [id])
-  createdAt         DateTime      @default(now())
-  room              room?         @relation(fields: [roomId], references: [id])
-  roomId            Int?
+  id                    Int           @id @default(autoincrement())
+  bookingNumber         String        @unique
+  userId                Int
+  providerReference     String?       @unique
+  totalPrice            Decimal       @db.Decimal(10, 2)
+  status                BookingStatus @default(PENDING)
+  checkIn               DateTime      @db.Date
+  checkOut              DateTime      @db.Date
+    holderEmail           String
+  holderFirstName       String
+  holderLastName        String
+  holderPhone           String
+  cancellationFees      Int?
+  cancellationReference String?
+
+  rooms                 bookingRoom[]
+  payment               payment?
+  user                  user          @relation(fields: [userId], references: [id])
+  createdAt             DateTime      @default(now())
+  room                  room?         @relation(fields: [roomId], references: [id])
+  roomId                Int?
 
   @@index([checkIn, checkOut])
 }
@@ -88,15 +92,18 @@ model bookingRoom {
   id            Int      @id @default(autoincrement())
   bookingId     Int
   booking       booking  @relation(fields: [bookingId], references: [id])
-  roomId        Int
-  room          room     @relation(fields: [roomId], references: [id])
+    roomCode      String
+  hotelId       Int
+  room          room     @relation(fields: [roomCode, hotelId], references: [code, hotelId])
+  guestsData    Json?
+  
   rateKey       String
   price         Decimal  @db.Decimal(10, 2)
   adultsCount   Int
   childrenCount Int
   createdAt     DateTime @default(now())
 
-  @@index([bookingId, roomId])
+  @@index([bookingId, roomCode, hotelId])
 }
 
 model favorite {

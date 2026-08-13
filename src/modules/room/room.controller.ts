@@ -7,7 +7,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { RoomServices } from './room.service';
-import { searchRoomsDto } from './Dto/searchRooms.dto';
+import { SearchRoomsDto } from './Dto/searchRooms.dto';
 
 @Controller('rooms')
 export class RoomController {
@@ -16,7 +16,7 @@ export class RoomController {
   @Get(':hotelId')
   async getHotelRooms(
     @Param('hotelId', ParseIntPipe) hotelId: number,
-    @Query() filter: searchRoomsDto,
+    @Query() filter: SearchRoomsDto,
     @Query('cursor') cursor?: string,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
   ) {
