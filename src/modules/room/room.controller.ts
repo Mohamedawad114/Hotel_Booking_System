@@ -1,33 +1,58 @@
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import {
-  Controller,
-  DefaultValuePipe,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { RoomServices } from './room.service';
 import { SearchRoomsDto } from './Dto/searchRooms.dto';
+import { Auth } from 'src/common/decorator';
+import { Sys_Role } from 'src/common/enums';
 
+@ApiTags('rooms')
+@ApiBearerAuth('access-token')
+@Auth(Sys_Role.User, Sys_Role.SuperAdmin, Sys_Role.SuperAdmin)
 @Controller('rooms')
 export class RoomController {
   constructor(private readonly roomService: RoomServices) {}
 
   @Get(':hotelId')
+  @ApiOperation({ summary: 'Get rooms for a hotel' })
+  @ApiParam({ name: 'hotelId', type: Number, description: 'Hotel ID' })
+  @ApiQuery({
+    name: 'adults',
+    required: false,
+    type: Number,
+    description: 'Number of adults',
+  })
+  @ApiQuery({
+    name: 'children',
+    required: false,
+    type: Number,
+    description: 'Number of children',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Hotel rooms fetched successfully',
+  })
   async getHotelRooms(
     @Param('hotelId', ParseIntPipe) hotelId: number,
     @Query() filter: SearchRoomsDto,
-    @Query('cursor') cursor?: string,
-    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit?: number,
   ) {
-    return this.roomService.getHotelRooms(hotelId, filter, cursor, limit);
+    return this.roomService.getHotelRooms(hotelId, filter);
   }
 
-  @Get(':hotelId/:roomCode/facilities')
-  async getRoomFacilities(
-    @Param('roomCode') roomCode: string,
-    @Param('hotelId', ParseIntPipe) hotelId: number,
-  ) {
-    return this.roomService.getRoomFacilities(roomCode, hotelId);
+  @Get(':roomId/facilities')
+  @ApiOperation({ summary: 'Get facilities for a room' })
+  @ApiParam({ name: 'roomId', type: Number, description: 'Room ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Room facilities fetched successfully',
+  })
+  async getRoomFacilities(@Param('roomId', ParseIntPipe) roomId: number) {
+    return this.roomService.getRoomFacilities(roomId);
   }
 }

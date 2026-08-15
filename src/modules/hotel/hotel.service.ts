@@ -18,7 +18,11 @@ import {
   TTL,
   FacilityRepository,
 } from 'src/common';
-import { SearchHotelsDto, SortingHotelsDto } from './Dto/search.dto';
+import {
+  SearchHotelsDto,
+  SearchHotelsQueryDto,
+  SortingHotelsDto,
+} from './Dto/search.dto';
 import { QueryDto } from './Dto/query.dto';
 import { ConfigService } from '@nestjs/config';
 import { PinoLogger } from 'nestjs-pino';
@@ -46,43 +50,49 @@ export class HotelServices implements OnModuleInit {
     this.countryCode = this.configService.getOrThrow<string>('COUNTRYCODE');
   }
 
-  async getAllHotels(
-    filter?: SearchHotelsDto,
-    query?: QueryDto,
-    sorting?: SortingHotelsDto,
-  ) {
+  async getAllHotels(query?: SearchHotelsQueryDto) {
     const limit = query?.limit ?? 20;
-    const sortField = sorting?.rating
+    const sortField = query?.rating
       ? 'rating'
-      : sorting?.ranking
+      : query?.ranking
         ? 'ranking'
         : 'createdAt';
     const cursorDecoded = decoderCursor(query?.cursor);
     const cached = await redis.get(
       redisKeys.getHotels(
-        filter?.countryCode,
+        query?.countryCode,
         query?.cursor,
+        query?.destinationCode,
         limit,
-        sorting,
+        { ranking: query?.ranking, rating: query?.rating },
         sortField,
       ),
     );
     if (cached) return JSON.parse(cached);
-    if (filter?.destinationCode) {
+    if (query?.destinationCode) {
       const isExited = await this.destinationRepo.findOne(
-        filter.destinationCode,
+     {   code:  query.destinationCode},
         { select: { id: true, code: true } },
       );
       if (!isExited) throw new NotFoundException('destination code not found');
     }
     const hotels = await this.hotelRepo.getHotels(
-      filter,
+      {
+        destinationCode: query?.destinationCode,
+        city: query?.city,
+        countryCode: query?.countryCode,
+        stars: query?.stars,
+        hotelName: query?.hotelName,
+      },
       {
         ...cursorDecoded,
         limit,
         sortField,
       },
-      sorting,
+      {
+        ranking: query?.ranking,
+        rating: query?.rating,
+      },
     );
     if (!hotels.length) throw new BadRequestException('no hotels found');
     const lastItem = hotels[hotels.length - 1];
@@ -94,14 +104,15 @@ export class HotelServices implements OnModuleInit {
     const res = {
       message: 'hotels',
       data: hotels,
-      meta: nextCursor,
+      meta: { nextCursor: nextCursor },
     };
     await redis.setex(
       redisKeys.getHotels(
-        filter?.countryCode,
-        nextCursor,
+        query?.countryCode,
+        query?.cursor,
+               query?.destinationCode,
         limit,
-        sorting,
+        { ranking: query?.ranking, rating: query?.rating },
         sortField,
       ),
       TTL.hotels,
@@ -113,7 +124,9 @@ export class HotelServices implements OnModuleInit {
     if (!hotelId) throw new BadRequestException('hotelId is required');
     const cached = await redis.get(redisKeys.hotelDetail(hotelId));
     if (cached) return JSON.parse(cached);
-    const hotel = await this.hotelRepo.findById(hotelId);
+    const hotel = await this.hotelRepo.findById(hotelId, {
+      include: { phones:true } ,
+    });
     if (!hotel) throw new NotFoundException('hotel not found');
     const res = {
       message: 'hotel details',

@@ -63,8 +63,9 @@ export class RoomRepository extends BaseRepository<
         "maxChildren",
         "roomType", 
         "roomCategory", 
+        "isParentRoom",
         "createdAt"
-      FROM "Room"
+      FROM "room"
       ${whereClause}
       ORDER BY "createdAt" ASC, id ASC 
       LIMIT ${limit};

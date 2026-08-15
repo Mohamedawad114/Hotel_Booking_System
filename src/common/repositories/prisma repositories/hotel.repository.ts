@@ -72,8 +72,8 @@ export class HotelRepository extends BaseRepository<
           Prisma.sql`"destinationCode" = ${filter.destinationCode}`,
         );
       }
-      if (filter?.rating) {
-        whereConditions.push(Prisma.sql`rating = ${filter.rating}`);
+      if (filter?.stars) {
+        whereConditions.push(Prisma.sql`rating = ${filter.stars}`);
       }
       const whereClause =
         whereConditions.length > 0

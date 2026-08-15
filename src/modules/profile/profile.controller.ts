@@ -15,6 +15,7 @@ import { ResetPasswordDto, UpdatePasswordDto, UpdateProfileDto } from './Dto';
 import type { Request, Response } from 'express';
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiResponse,
@@ -26,6 +27,7 @@ import { Throttle } from '@nestjs/throttler';
 
 @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
 @ApiTags('profile')
+@ApiBearerAuth('access-token')
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileServices: ProfileService) {}

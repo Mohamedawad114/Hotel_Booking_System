@@ -23,7 +23,7 @@ import { GetBookingDetails } from './queries/getBooking.query';
 
 @ApiTags('booking')
 @ApiBearerAuth('access-token')
-@Auth(Sys_Role.Admin, Sys_Role.User, Sys_Role.SuperAdmin)
+@Auth(Sys_Role.Admin, Sys_Role.User)
 @Controller('booking')
 export class BookingController {
   constructor(private readonly queryBus: QueryBus) {}

@@ -6,6 +6,7 @@ import {
 import {
   decoderCursor,
   encodedCursor,
+  HotelRepository,
   redis,
   redisKeys,
   RoomFacilityRepository,
@@ -19,26 +20,26 @@ export class RoomServices {
   constructor(
     private readonly roomRepo: RoomRepository,
     private readonly roomFacilityRepo: RoomFacilityRepository,
+    private readonly hotelRepo: HotelRepository,
   ) {}
-  async getHotelRooms(
-    hotelId: number,
-    filter: SearchRoomsDto,
-    cursor?: string,
-    limit?: number,
-  ) {
+  async getHotelRooms(hotelId: number, filter: SearchRoomsDto) {
     if (!hotelId) throw new BadRequestException('hotelId is required');
-    const cursorDecoded = decoderCursor(cursor);
+    const hotel = await this.hotelRepo.findById(hotelId, {
+      select: { id: true },
+    });
+    if (!hotel) throw new NotFoundException('hotel not found');
+    const cursorDecoded = decoderCursor(filter.cursor);
     const cached = await redis.get(
-      redisKeys.hotelRooms(hotelId, cursor, limit),
+      redisKeys.hotelRooms(hotelId, filter.cursor, filter.limit),
     );
     if (cached) return JSON.parse(cached);
     const rooms = await this.roomRepo.getHotelRooms(hotelId, filter, {
-      limit: limit || 20,
+      limit: filter.limit || 20,
       value: cursorDecoded?.value,
       id: cursorDecoded?.id,
     });
-    if (!rooms || !rooms.length)
-      throw new NotFoundException('hotel no have rooms');
+    if (!rooms.length || (!rooms.length && filter.cursor))
+      throw new NotFoundException('hotel no have more rooms');
     const lastItem = rooms[rooms.length - 1];
     const nextCursor = encodedCursor({
       value: lastItem.createdAt!,
@@ -57,20 +58,20 @@ export class RoomServices {
     );
     return res;
   }
-  async getRoomFacilities(roomCode: string, hotelId: number) {
-    if (!roomCode && !hotelId)
-      throw new BadRequestException('room id is required');
-    const cached = await redis.get(redisKeys.roomFacilities(roomCode, hotelId));
+  async getRoomFacilities(roomId: number) {
+    if (!roomId) throw new BadRequestException('room id is required');
+    const cached = await redis.get(redisKeys.roomFacilities(roomId));
     if (cached) return JSON.parse(cached);
     const room = await this.roomRepo.findUnique(
-      { code: roomCode, hotelId },
+      { id: roomId },
       {
-        select: { id: true, code: true },
+        select: { hotelId: true, code: true },
       },
     );
     if (!room) throw new NotFoundException('room not found');
     const facilities = await this.roomFacilityRepo.findMany({
-      code: room.code,
+      roomCode: room.code,
+      hotelId:room.hotelId
     });
     if (!facilities.length) return { message: 'no facilities for this room' };
     const res = {
@@ -78,7 +79,7 @@ export class RoomServices {
       data: facilities,
     };
     await redis.setex(
-      redisKeys.roomFacilities(roomCode, hotelId),
+      redisKeys.roomFacilities(roomId),
       TTL.roomFacilities,
       JSON.stringify(res),
     );

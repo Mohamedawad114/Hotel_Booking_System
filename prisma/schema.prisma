@@ -3,6 +3,8 @@
 
 generator client {
   provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+
 }
 
 datasource db {
@@ -75,12 +77,16 @@ model booking {
   holderFirstName       String
   holderLastName        String
   holderPhone           String
+  refundAmount          Int?
   cancellationFees      Int?
   cancellationReference String?
-  rooms     bookingRoom[]
-  payment   payment?
-  user      user          @relation(fields: [userId], references: [id])
-  createdAt DateTime      @default(now())
+  rooms                 bookingRoom[]
+  payment               payment?
+  user                  user          @relation(fields: [userId], references: [id])
+  createdAt             DateTime      @default(now())
+  room                  room?         @relation(fields: [roomId], references: [id])
+  roomId                Int?
+
   @@index([checkIn, checkOut])
 }
 
@@ -162,6 +168,8 @@ model room {
   facilities   roomFacilities[]
   bookings     booking[]
   bookingRooms bookingRoom[]
+    updatedAt       DateTime          @updatedAt
+  createdAt       DateTime          @default(now())
 
   @@unique([code, hotelId])
   @@index([hotelId, code])

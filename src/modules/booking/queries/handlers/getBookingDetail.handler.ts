@@ -27,7 +27,6 @@ export class GetBookingDetailsHandler implements IQueryHandler<GetBookingDetails
       },
     );
     if (!booking) throw new NotFoundException('booking not found');
-    // authorize: allow admins or owner
     if (user.role !== Sys_Role.Admin && user.role !== Sys_Role.SuperAdmin) {
       if (booking.userId !== user.id)
         throw new ForbiddenException('access denied');

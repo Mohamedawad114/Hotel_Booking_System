@@ -87,7 +87,7 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
         rateKey: rates[i].newRateKey,
         adultsCount: s.adults,
         childrenCount: s.children,
-        guests: data.rooms[i].guests,
+        guests: dto.rooms[i].guests,
       }));
       const checkIn = new Date(data.checkIn);
       const checkOut = new Date(data.checkOut);

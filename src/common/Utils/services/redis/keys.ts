@@ -16,17 +16,18 @@ export const redisKeys = {
   getHotels: (
     countryCode?: string,
     cursor?: string,
+    destinationCode?: string,
     limit?: number,
     sorting?: SortingHotelsDto,
     sortField?: string,
   ) =>
-    `hotel:${countryCode ?? 'all'}:sortBy=${sortField ?? 'createdAt'}:${sorting?.rating ?? sorting?.ranking ?? 'desc'}:cursor=${cursor ?? 'start'}:limit=${limit ?? 20}`,
+    `hotel:${countryCode ?? 'all'}:destinationCode= ${destinationCode}:sortBy=${sortField ?? 'createdAt'}:${sorting?.rating ?? sorting?.ranking ?? 'desc'}:cursor=${cursor ?? 'start'}:limit=${limit ?? 20}`,
   hotelDetail: (hotelId: number) => `hotel_${hotelId}`,
   hotelRooms: (hotelId: number, cursor?: string, limit?: number) =>
     `hotelRooms: ${hotelId}_cursor:${cursor}_limit:${limit}`,
   hotelFacilities: (hotelId: number) => `hotelFacilities: ${hotelId}`,
-  roomFacilities: (roomCode: string, hotelId: number) =>
-    `roomFacilities: ${roomCode}_${hotelId}`,
+  roomFacilities: (roomId: number) =>
+    `roomFacilities: ${roomId}`,
   availability: (hotelId: number, dto: SearchAvailabilityDto) =>
     `hotel:${hotelId} :checkIn:${dto.checkIn.toISOString()}:checkOut:${dto.checkOut.toISOString()}:adults:${dto.adults}:children:${dto.children}`,
   selectionRooms: (hotelCode: number, userId: number) =>

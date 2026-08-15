@@ -16,7 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { HotelServices } from './hotel.service';
 import { QueryDto } from './Dto/query.dto';
-import { SearchHotelsDto, SortingHotelsDto } from './Dto/search.dto';
+import { SearchHotelsDto, SearchHotelsQueryDto, SortingHotelsDto } from './Dto/search.dto';
 import { Auth } from 'src/common/decorator';
 import { Sys_Role } from 'src/common/enums';
 
@@ -29,35 +29,12 @@ export class HotelController {
 
   @Get('search')
   @ApiOperation({ summary: 'Search hotels with filters and pagination' })
-  @ApiQuery({
-    name: 'cursor',
-    required: false,
-    type: String,
-    description: 'Pagination cursor',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Number of results per page',
-    example: 20,
-  })
   @ApiResponse({ status: 200, description: 'Hotels fetched successfully' })
-  async searchHotels(
-    @Query(
-      'limit',
-      new ParseIntPipe({ optional: true }),
-      new DefaultValuePipe(20),
-    )
-    limit?: number,
-    @Query() filter?: SearchHotelsDto,
-    @Query() query?: QueryDto,
-    @Query() sorting?: SortingHotelsDto,
-  ) {
-    return await this.hotelService.getAllHotels(filter, query, sorting);
+  async searchHotels(@Query() query?: SearchHotelsQueryDto) {
+    return await this.hotelService.getAllHotels(query);
   }
 
-  @Get('hotel/:id')
+  @Get('/:id')
   @ApiOperation({ summary: 'Get hotel details by id' })
   @ApiParam({ name: 'id', type: Number, description: 'Hotel ID' })
   @ApiResponse({

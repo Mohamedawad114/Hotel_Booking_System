@@ -1,7 +1,6 @@
 export interface IRoomSelection {
   rateKey: string;
   roomCode: string;
-  roomId: number;
   adults: number;
   children: number;
 }

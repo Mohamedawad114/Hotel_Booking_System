@@ -58,16 +58,19 @@ export class EmailWorker extends WorkerHost {
         this.logger.warn(`Unknown job type: ${job.name}`);
         throw new Error('Unknown job type');
     }
-    const n8nResponse = await firstValueFrom(
-      this.httpService.post(this.config.getOrThrow<string>('N8N_URL'), {
-        email: to,
-        emailHtml,
-        emailSubject,
-      }),
-    );
-    this.logger.info(`email have send successfully :${n8nResponse}`);
+    try {
+      const n8nResponse = await firstValueFrom(
+        this.httpService.post(this.config.getOrThrow<string>('N8N_URL'), {
+          email: to,
+          emailHtml,
+          emailSubject,
+        }),
+      );
+      this.logger.info(`email have send successfully :${n8nResponse}`);
+    } catch (err) {
+      this.logger.error(`err :${err}`)
+    }
   }
-
   @OnWorkerEvent('completed')
   handleCompleted(job: Job) {
     this.logger.info(`Job ${job.id} completed successfully`);

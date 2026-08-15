@@ -43,7 +43,6 @@ export class CancelBookingHandler implements ICommandHandler<CancelBookingComman
         booking.providerReference,
       );
       await this.eventBus.publish(new CancelBookingEvent(user, booking, 0));
-
       return { message: 'booking canceled successfully' };
     }
     if (booking.status === BookingStatus.CONFIRMED) {
@@ -66,7 +65,6 @@ export class CancelBookingHandler implements ICommandHandler<CancelBookingComman
         cancellationFee: cancellationResult.cancellationFee,
       };
     }
-
     throw new BadRequestException(
       `cannot cancel booking with status ${booking.status}`,
     );
