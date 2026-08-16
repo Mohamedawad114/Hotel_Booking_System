@@ -3,7 +3,7 @@ export interface IHotel {
   code: number;
   name: string;
   description: string;
-  email: string;
+  email?: string;
   address: string;
   images: string[];
   web: string;

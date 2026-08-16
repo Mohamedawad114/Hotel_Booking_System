@@ -1,11 +1,11 @@
 import {
   CanActivate,
-  NotFoundException,
   ExecutionContext,
   Injectable,
 } from '@nestjs/common';
-import { GqlContextType } from '@nestjs/graphql';
+import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { Reflector } from '@nestjs/core';
+import { IUser } from '../interfaces';
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -15,6 +15,21 @@ export class RolesGuard implements CanActivate {
       case 'http': {
         const request = context.switchToHttp().getRequest();
         const userRole = request.user?.role;
+        if (!userRole) return false;
+        const allowedRoles = this.reflector.getAllAndOverride<string[]>(
+          'roles',
+          [context.getHandler(), context.getClass()],
+        );
+        if (!allowedRoles) return true;
+        if (allowedRoles && allowedRoles.includes(userRole)) return true;
+        return false;
+      }
+      case 'graphql': {
+        const gqlContext = GqlExecutionContext.create(context);
+        const { req } = gqlContext.getContext<{
+          req: Request & { user: IUser };
+        }>();
+        const userRole = req.user?.role;
         if (!userRole) return false;
         const allowedRoles = this.reflector.getAllAndOverride<string[]>(
           'roles',

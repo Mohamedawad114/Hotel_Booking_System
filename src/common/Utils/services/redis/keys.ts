@@ -1,5 +1,5 @@
 import { SearchAvailabilityDto } from 'src/modules/booking/dto/checkAvailability.dto';
-import { SortingHotelsDto } from 'src/modules/hotel/Dto/search.dto';
+import { SearchArgs } from 'src/modules/hotel/Dto/search.dto';
 
 export const redisKeys = {
   refreshToken: (userId: number, jti?: string) =>
@@ -13,21 +13,13 @@ export const redisKeys = {
   socketKey: (userId: string) => `user_sockets:${userId}`,
   destination: () => `destinations`,
   facility: () => `facilities`,
-  getHotels: (
-    countryCode?: string,
-    cursor?: string,
-    destinationCode?: string,
-    limit?: number,
-    sorting?: SortingHotelsDto,
-    sortField?: string,
-  ) =>
-    `hotel:${countryCode ?? 'all'}:destinationCode= ${destinationCode}:sortBy=${sortField ?? 'createdAt'}:${sorting?.rating ?? sorting?.ranking ?? 'desc'}:cursor=${cursor ?? 'start'}:limit=${limit ?? 20}`,
+  getHotels: (query?: SearchArgs, sortField?: string,cursor?:string) =>
+    `hotel:${query?.countryCode ?? 'all'}:destinationCode=${query?.destinationCode}:sortBy=${sortField ?? 'createdAt'}:${query?.rating ?? query?.ranking ?? 'desc'}:cursor=${cursor ?? 'start'}:limit=${query?.limit ?? 20}`,
   hotelDetail: (hotelId: number) => `hotel_${hotelId}`,
   hotelRooms: (hotelId: number, cursor?: string, limit?: number) =>
     `hotelRooms: ${hotelId}_cursor:${cursor}_limit:${limit}`,
   hotelFacilities: (hotelId: number) => `hotelFacilities: ${hotelId}`,
-  roomFacilities: (roomId: number) =>
-    `roomFacilities: ${roomId}`,
+  roomFacilities: (roomId: number) => `roomFacilities: ${roomId}`,
   availability: (hotelId: number, dto: SearchAvailabilityDto) =>
     `hotel:${hotelId} :checkIn:${dto.checkIn.toISOString()}:checkOut:${dto.checkOut.toISOString()}:adults:${dto.adults}:children:${dto.children}`,
   selectionRooms: (hotelCode: number, userId: number) =>

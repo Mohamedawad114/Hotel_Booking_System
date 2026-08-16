@@ -43,7 +43,7 @@ export class RoomServices {
     const lastItem = rooms[rooms.length - 1];
     const nextCursor = encodedCursor({
       value: lastItem.createdAt!,
-      sortField: 'createdAt',
+      sortedField: 'createdAt',
       id: lastItem.id!,
     });
     const res = {

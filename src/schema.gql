@@ -1,0 +1,48 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""hotels details"""
+type Hotel {
+  id: Float!
+  code: Float!
+  name: String!
+  email: String
+  web: String!
+  address: String!
+  description: String!
+  ranking: Int!
+  rating: Int!
+  latitude: Float
+  longitude: Float
+  city: String!
+  destinationCode: String!
+  countryCode: String!
+  images: [String!]!
+  phones: [HotelPhones!]
+}
+
+type HotelPhones {
+  id: Int!
+  hotelId: Int!
+  phoneNumber: String!
+  phoneType: String!
+}
+
+type MetaData {
+  nextCursor: String!
+}
+
+type HotelsResponse {
+  data: [Hotel!]!
+  meta: MetaData
+}
+
+type Query {
+  searchHotels(hotelName: String, destinationCode: String, city: String, stars: Int, countryCode: String, rating: order, ranking: order, cursor: String, limit: Int): HotelsResponse!
+}
+
+enum order {
+  asc
+  desc
+}

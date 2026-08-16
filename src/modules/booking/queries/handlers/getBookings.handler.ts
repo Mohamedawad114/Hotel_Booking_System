@@ -8,6 +8,7 @@ export class GetBookingsHandler implements IQueryHandler<GetBookingsQuery> {
   constructor(private readonly bookingRepo: BookingRepository) {}
 
   async execute(query: GetBookingsQuery) {
+    //graphQl
     const { userId, page = 1, limit = 20 } = query;
     if (!userId) throw new BadRequestException('userId is required');
     const offset = (page - 1) * limit;

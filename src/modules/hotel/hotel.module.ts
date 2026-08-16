@@ -3,6 +3,7 @@ import {
   DestinationRepository,
   FacilityRepository,
   HotelFacilityRepository,
+  HotelPhonesRepository,
   HotelRepository,
   ProviderModule,
   RoomFacilityRepository,
@@ -11,6 +12,8 @@ import {
 import { HotelServices } from './hotel.service';
 import { HotelController } from './hotel.controller';
 import { HotelTask } from './hotel.tasks';
+import { HotelResolver } from './hotel.resolver';
+import { HotelPhoneLoader } from './hotelPhones.loader';
 
 @Module({
   imports: [ProviderModule],
@@ -23,6 +26,9 @@ import { HotelTask } from './hotel.tasks';
     RoomRepository,
     RoomFacilityRepository,
     HotelFacilityRepository,
+    HotelResolver,
+    HotelPhoneLoader,
+    HotelPhonesRepository,
   ],
   controllers: [HotelController],
 })

@@ -2,17 +2,17 @@ import { ICursorDecoded } from 'src/common/interfaces';
 export const encodedCursor = ({
   id,
   value,
-  sortField = 'createdAt',
+  sortedField = 'createdAt',
 }: {
   id: number;
   value: Date | number;
-  sortField?: 'createdAt' | 'rating' | 'ranking';
+  sortedField?: 'createdAt' | 'rating' | 'ranking';
 }) => {
   return Buffer.from(
     JSON.stringify({
       id,
       value,
-      sortField,
+      sortedField,
     }),
   ).toString('base64');
 };

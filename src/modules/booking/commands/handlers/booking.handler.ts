@@ -26,7 +26,7 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
     private readonly logger: PinoLogger,
   ) {}
 
-  async execute(command: BookingCommand) {
+  async execute(command: BookingCommand) {  //graph
     const { user, hotelCode, idempotencyKey, dto } = command;
     const bookingNumber = `BK-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const userLockKey = redisKeys.userLock(user.id);

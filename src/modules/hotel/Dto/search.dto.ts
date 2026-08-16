@@ -1,4 +1,4 @@
-import { ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsNumber,
   IsOptional,
@@ -6,28 +6,32 @@ import {
   Min,
   Max,
   IsEnum,
+  IsInt,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { order } from 'src/common/enums';
-import { QueryDto } from './query.dto';
+import { ArgsType, Field, Int, registerEnumType } from '@nestjs/graphql';
+import { Type } from 'class-transformer';
 
-export class SearchHotelsDto {
+registerEnumType(order, { name: 'order' });
+@ArgsType()
+export class SearchArgs {
   @ApiPropertyOptional({
     description: 'Hotel name filter',
     example: 'Ocean View Hotel',
   })
   @IsOptional()
   @IsString()
+  @Field(() => String, { nullable: true })
   hotelName?: string;
-
   @ApiPropertyOptional({
     description: 'Destination code filter',
     example: 'PAR',
   })
   @IsOptional()
   @IsString()
+  @Field(() => String, { nullable: true })
   destinationCode?: string;
-
+  @Field(() => String, { nullable: true })
   @ApiPropertyOptional({
     description: 'City filter',
     example: 'Paris',
@@ -35,20 +39,13 @@ export class SearchHotelsDto {
   @IsOptional()
   @IsString()
   city?: string;
-
-  @ApiPropertyOptional({
-    description: 'Minimum hotel star rating',
-    example: 4,
-    minimum: 1,
-    maximum: 5,
-  })
+  @Field(() => Int, { nullable: true })
+  @IsInt()
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
   @Min(1)
   @Max(5)
   stars?: number;
-
+  @Field(() => String, { nullable: true })
   @ApiPropertyOptional({
     description: 'Country code filter',
     example: 'FR',
@@ -56,18 +53,7 @@ export class SearchHotelsDto {
   @IsOptional()
   @IsString()
   countryCode?: string;
-}
-
-export class SortingHotelsDto {
-  @ApiPropertyOptional({
-    description: 'Sorting direction for ranking',
-    enum: order,
-    example: order.asc,
-  })
-  @IsOptional()
-  @IsEnum(order)
-  ranking?: order;
-
+  @Field(() => order, { nullable: true })
   @ApiPropertyOptional({
     description: 'Sorting direction for rating',
     enum: order,
@@ -76,10 +62,29 @@ export class SortingHotelsDto {
   @IsOptional()
   @IsEnum(order)
   rating?: order;
+  @Field(() => order, { nullable: true })
+  @ApiPropertyOptional({
+    description: 'Sorting direction for ranking',
+    enum: order,
+    example: order.asc,
+  })
+  @IsOptional()
+  @IsEnum(order)
+  ranking?: order;
+  @Field(() => String, { nullable: true })
+  @ApiPropertyOptional({ description: 'Pagination cursor' })
+  @IsOptional()
+  @IsString()
+  cursor?: string;
+  @ApiPropertyOptional({
+    description: 'Number of results per page',
+    example: 20,
+  })
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @Type(() => Number)
+  @Max(100)
+  @IsNumber()
+  @Min(1)
+  limit?: number;
 }
-
-export class SearchHotelsQueryDto extends IntersectionType(
-  QueryDto,
-  SearchHotelsDto,
-  SortingHotelsDto,
-) {}

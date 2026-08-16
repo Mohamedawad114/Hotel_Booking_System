@@ -1,22 +1,13 @@
-import {
-  Controller,
-  DefaultValuePipe,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { HotelServices } from './hotel.service';
-import { QueryDto } from './Dto/query.dto';
-import { SearchHotelsDto, SearchHotelsQueryDto, SortingHotelsDto } from './Dto/search.dto';
+// import { SearchHotelsQueryDto } from './Dto/search.dto';
 import { Auth } from 'src/common/decorator';
 import { Sys_Role } from 'src/common/enums';
 
@@ -26,13 +17,6 @@ import { Sys_Role } from 'src/common/enums';
 @Controller('hotel')
 export class HotelController {
   constructor(private readonly hotelService: HotelServices) {}
-
-  @Get('search')
-  @ApiOperation({ summary: 'Search hotels with filters and pagination' })
-  @ApiResponse({ status: 200, description: 'Hotels fetched successfully' })
-  async searchHotels(@Query() query?: SearchHotelsQueryDto) {
-    return await this.hotelService.getAllHotels(query);
-  }
 
   @Get('/:id')
   @ApiOperation({ summary: 'Get hotel details by id' })

@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { resolve } from 'path';
+import { join, resolve } from 'path';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BullModule } from '@nestjs/bullmq';
 import { CommonModule, PrismaModule, redis } from './common';
@@ -29,6 +29,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { ExpressAdapter } from '@bull-board/express';
 import { BookingModule } from './modules/booking/booking.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -61,6 +63,11 @@ import { BookingModule } from './modules/booking/booking.module';
           },
         },
       },
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      driver: ApolloDriver,
+      context: ({ res, req }) => ({ req, res }),
     }),
     PrismaModule,
     CommonModule,

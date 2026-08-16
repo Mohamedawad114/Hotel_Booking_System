@@ -13,7 +13,7 @@ import { Sys_Role } from 'src/common/enums';
 export class GetBookingDetailsHandler implements IQueryHandler<GetBookingDetails> {
   constructor(private readonly bookingRepo: BookingRepository) {}
 
-  async execute(query: GetBookingDetails): Promise<any> {
+  async execute(query: GetBookingDetails): Promise<any> {  //graphql
     const { bookingId, user } = query;
     if (!bookingId) throw new NotFoundException('booking id is required');
     const booking = await this.bookingRepo.findUnique(

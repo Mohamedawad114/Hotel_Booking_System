@@ -4,9 +4,10 @@ import {
   ExecutionContext,
   Injectable,
 } from '@nestjs/common';
-import { GqlContextType } from '@nestjs/graphql';
+import { GqlContextType, GqlExecutionContext } from '@nestjs/graphql';
 import { redis, redisKeys, TokenServices } from '../Utils';
 import { UserRepository } from '../repositories/prisma repositories';
+import { IUser } from '../interfaces';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
@@ -28,6 +29,23 @@ export class AuthGuard implements CanActivate {
         const user = await this.userRepo.findById(decoded.id);
         if (!user) throw new NotFoundException('user not found');
         request.user = user;
+        return true;
+      }
+      case 'graphql': {
+        const gqlContext = GqlExecutionContext.create(context);
+        const { req } = gqlContext.getContext<{
+          req: Request & { user: IUser };
+        }>();
+        const authHeader = req.headers['authorization'];
+        if (!authHeader) return false;
+        const token = authHeader.split(' ')[1];
+        if (!token) return false;
+        const decoded = this.tokenService.VerifyAccessToken(token);
+        const isBlacklisted = await redis.get(redisKeys.token_blackList(token));
+        if (isBlacklisted) return false;
+        const user = await this.userRepo.findById(decoded.id);
+        if (!user) throw new NotFoundException('user not found');
+        req.user = user;
         return true;
       }
     }
