@@ -1,11 +1,18 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { CommandHandler, EventBus, ICommandHandler } from '@nestjs/cqrs';
 import { CancelBookingCommand } from '../cancelBooking.command';
-import { BookingRepository, HotelbedsProvider } from 'src/common';
+import {
+  BookingRepository,
+  HotelbedsProvider,
+  redis,
+  redisKeys,
+  TTL,
+} from 'src/common';
 import { BookingStatus } from '@prisma/client';
 import { BookingService } from '../../booking.service';
 import { CancelBookingEvent } from '../../events/cancelBooking.event';
@@ -20,7 +27,23 @@ export class CancelBookingHandler implements ICommandHandler<CancelBookingComman
     private readonly bookingService: BookingService,
   ) {}
   async execute(command: CancelBookingCommand): Promise<any> {
-    const { user, bookingId } = command;
+    const { user, bookingId, key } = command;
+    const lockKey = redisKeys.idempotencyKey(user.id, bookingId, key);
+    const lockAcquired = await redis.set(
+      lockKey,
+      'processing',
+      'EX',
+      TTL.idempotencyKey,
+      'NX',
+    );
+    if (!lockAcquired) {
+      const existing = await redis.get(lockKey);
+      if (existing === 'processing')
+        throw new ConflictException(
+          'cancel booking is being processed, please wait',
+        );
+      return JSON.parse(existing!);
+    }
     const now = new Date();
     const booking = await this.bookingRepo.findOne({
       userId: user.id,
@@ -49,13 +72,13 @@ export class CancelBookingHandler implements ICommandHandler<CancelBookingComman
       const cancellationResult = await this.providerService.CancelBooking(
         booking.providerReference!,
       );
-        const updatedBooking = await this.bookingRepo.cancelWithRefund(
-          booking.id,
-          {
-            refundAmount: cancellationResult.refundAmount,    /// build payment model
-            cancellationFee: cancellationResult.cancellationFee,
-          },
-        );
+      const updatedBooking = await this.bookingRepo.cancelWithRefund(
+        booking.id,
+        {
+          refundAmount: cancellationResult.refundAmount, /// build payment model
+          cancellationFee: cancellationResult.cancellationFee,
+        },
+      );
       await this.eventBus.publish(
         new CancelBookingEvent(user, booking, cancellationResult.refundAmount),
       );

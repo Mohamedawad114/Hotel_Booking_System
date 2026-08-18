@@ -15,7 +15,7 @@ import {
   IProviderService,
   IBookingRooms,
 } from 'src/common/interfaces';
-import { BookingDto } from 'src/modules/booking/dto/booking.dto';
+import { BookingInput } from 'src/modules/booking/dto/booking.dto';
 import { SearchAvailabilityDto } from 'src/modules/booking/dto/checkAvailability.dto';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
@@ -299,7 +299,7 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
     checkIn: Date,
     checkOut: Date,
     rooms: IBookingRooms[],
-    params: BookingDto,
+    params: BookingInput,
   ) {
     try {
       const payload = {

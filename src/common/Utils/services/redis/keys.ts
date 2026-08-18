@@ -8,8 +8,8 @@ export const redisKeys = {
   resetPassword: (email: string) => `otp_reset:${email}`,
   token_blackList: (accessToken: string) => `tokens_blacklist:${accessToken}`,
   secret: (email: string) => `${email}_secret`,
-  idempotencyKey: (userId: number, hotelCode: number, key: string) =>
-    `idempotency:${userId}:${hotelCode}:${key}`,
+  idempotencyKey: (userId: number, id: number, key: string) =>
+    `idempotency:${userId}:${id}:${key}`,
   socketKey: (userId: string) => `user_sockets:${userId}`,
   destination: () => `destinations`,
   facility: () => `facilities`,

@@ -26,7 +26,7 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
     private readonly logger: PinoLogger,
   ) {}
 
-  async execute(command: BookingCommand) {  //graph
+  async execute(command: BookingCommand) {
     const { user, hotelCode, idempotencyKey, dto } = command;
     const bookingNumber = `BK-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const userLockKey = redisKeys.userLock(user.id);
@@ -58,10 +58,7 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
           throw new ConflictException(
             'booking is being processed, please wait',
           );
-        return {
-          data: JSON.parse(existing!),
-          message: 'Booking already confirmed',
-        };
+        return JSON.parse(existing!);
       }
       const raw = await redis.get(redisKeys.selectionRooms(hotelCode, user.id));
       if (!raw) {
@@ -113,10 +110,7 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
       this.eventBus.publish(
         new ConfirmBookingEvent(user, hotelCode, bookingCreated),
       );
-      return {
-        data: bookingCreated,
-        message: 'Booking confirmed successfully',
-      };
+      return bookingCreated;
     } catch (err: any) {
       if (providerBooking) {
         this.logger.error(

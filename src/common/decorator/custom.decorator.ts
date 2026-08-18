@@ -1,28 +1,14 @@
-import {
-  registerDecorator,
-  ValidationArguments,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { GqlExecutionContext } from '@nestjs/graphql';
 
-@ValidatorConstraint({ name: 'match', async: true })
-export class MatchConstraint<T> implements ValidatorConstraintInterface {
-  validate(value: T, args: ValidationArguments): Promise<boolean> | boolean {
-    const object = args.object;
-    return value === object[args.constraints[0]];
-  }
-  defaultMessage(args?: ValidationArguments): string {
-    return `${args?.property} must match ${args?.constraints[0]}`;
-  }
-}
-export function IsMatch(constraint: string[], validationOptions?: any) {
-  return function (object: Object, propertyName: string) {
-    registerDecorator({
-      target: object.constructor,
-      propertyName: propertyName,
-      options: validationOptions,
-      constraints: constraint,
-      validator: MatchConstraint,
-    });
-  };
-}
+export const IdempotencyKey = createParamDecorator(
+  (headerName: string = 'idempotency-key', ctx: ExecutionContext): string => {
+    const key = headerName.toLowerCase();
+    if (ctx.getType<string>() === 'graphql') {
+      const gqlCtx = GqlExecutionContext.create(ctx);
+      return gqlCtx.getContext().req.headers?.[key];
+    } else {
+      return ctx.switchToHttp().getRequest().headers?.[key];
+    }
+  },
+);

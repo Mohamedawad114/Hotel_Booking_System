@@ -1,8 +1,9 @@
-import { type IUser } from "src/common/interfaces";
+import { type IUser } from 'src/common/interfaces';
 
-export class CancelBookingCommand{
-    constructor(
-        public readonly user: IUser,
-        public readonly bookingId:number
-    ){}
+export class CancelBookingCommand {
+  constructor(
+    public readonly user: IUser,
+    public readonly bookingId: number,
+    public readonly key: string,
+  ) {}
 }

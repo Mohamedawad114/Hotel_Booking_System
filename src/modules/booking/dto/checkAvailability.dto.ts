@@ -7,16 +7,13 @@ export class SearchAvailabilityDto {
   @IsDate()
   @Type(() => Date)
   checkIn!: Date;
-
   @ApiProperty({ example: '2026-09-15', description: 'Check-out date' })
   @IsDate()
   @Type(() => Date)
   checkOut!: Date;
-
   @ApiProperty({ example: 1, description: 'Number of children' })
   @IsInt()
   children!: number;
-
   @ApiProperty({ example: 2, description: 'Number of adults' })
   @IsInt()
   adults!: number;

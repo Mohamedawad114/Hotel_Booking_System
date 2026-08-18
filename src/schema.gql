@@ -38,6 +38,57 @@ type HotelsResponse {
   meta: MetaData
 }
 
+type GuestType {
+  firstName: String!
+  lastName: String!
+  age: Int
+}
+
+type BookingRoomType {
+  id: ID!
+  bookingId: Int!
+  roomCode: String!
+  hotelId: Int!
+  rateKey: String!
+  price: Float!
+  adultsCount: Int!
+  childrenCount: Int!
+  guestsData: GuestType
+  createdAt: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type BookingType {
+  id: ID!
+  bookingNumber: String!
+  userId: Int!
+  providerReference: String
+  totalPrice: Float!
+  status: BookingStatus!
+  checkIn: DateTime!
+  checkOut: DateTime!
+  holderFirstName: String!
+  holderLastName: String!
+  holderEmail: String!
+  holderPhone: String!
+  refundAmount: Int
+  cancellationFees: Int
+  cancellationReference: String
+  rooms: [BookingRoomType!]!
+  createdAt: DateTime!
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 type Query {
   searchHotels(hotelName: String, destinationCode: String, city: String, stars: Int, countryCode: String, rating: order, ranking: order, cursor: String, limit: Int): HotelsResponse!
 }
@@ -45,4 +96,30 @@ type Query {
 enum order {
   asc
   desc
+}
+
+type Mutation {
+  createBooking(input: BookingInput!, hotelId: Int!): BookingType!
+}
+
+input BookingInput {
+  rooms: [RoomGuestsDto!]!
+  holder: HoldDto!
+}
+
+input RoomGuestsDto {
+  guests: [GuestDto!]!
+}
+
+input GuestDto {
+  firstName: String!
+  lastName: String!
+  age: Int
+}
+
+input HoldDto {
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone: String!
 }
