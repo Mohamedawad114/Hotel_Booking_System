@@ -53,7 +53,7 @@ type BookingRoomType {
   price: Float!
   adultsCount: Int!
   childrenCount: Int!
-  guestsData: GuestType
+  guestsData: [GuestType!]
   createdAt: DateTime!
 }
 
@@ -78,6 +78,7 @@ type BookingType {
   refundAmount: Int
   cancellationFees: Int
   cancellationReference: String
+  paymentType: PaymentType!
   rooms: [BookingRoomType!]!
   createdAt: DateTime!
 }
@@ -89,8 +90,53 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum PaymentType {
+  AT_WEB
+  AT_HOTEL
+}
+
+type Payment {
+  amount: Float!
+  paymentId: String!
+  paidAt: DateTime
+  status: paymentStatus!
+  bookingId: Int!
+  updatedAt: DateTime!
+  createdAt: DateTime!
+}
+
+enum paymentStatus {
+  pending
+  completed
+  failed
+  canceled
+}
+
+type bookingDetails {
+  id: ID!
+  bookingNumber: String!
+  userId: Int!
+  providerReference: String
+  totalPrice: Float!
+  status: BookingStatus!
+  checkIn: DateTime!
+  checkOut: DateTime!
+  holderFirstName: String!
+  holderLastName: String!
+  holderEmail: String!
+  holderPhone: String!
+  refundAmount: Int
+  cancellationFees: Int
+  cancellationReference: String
+  paymentType: PaymentType!
+  rooms: [BookingRoomType!]!
+  createdAt: DateTime!
+  payment: Payment
+}
+
 type Query {
   searchHotels(hotelName: String, destinationCode: String, city: String, stars: Int, countryCode: String, rating: order, ranking: order, cursor: String, limit: Int): HotelsResponse!
+  getBookingDetails(hotelId: Int!): bookingDetails!
 }
 
 enum order {
@@ -105,6 +151,7 @@ type Mutation {
 input BookingInput {
   rooms: [RoomGuestsDto!]!
   holder: HoldDto!
+  paymentType: PaymentType!
 }
 
 input RoomGuestsDto {

@@ -2,9 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-    binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
-
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -21,7 +20,8 @@ model user {
   city        String
   street      String
   phone       String
-  photo       String?
+  photoUrl       String?
+  photoId      String?
   secret      String?
   isTwoFA     Boolean  @default(false)
   BackupCodes String[]
@@ -51,17 +51,18 @@ model review {
 }
 
 model payment {
-  id        Int           @id @default(autoincrement())
-  user      user          @relation(fields: [userId], references: [id])
-  userId    Int
-  amount    Float
-  paymentId String        @unique
-  paidAt    DateTime?     @db.Date
-  status    paymentStatus @default(pending)
-  booking   booking       @relation(fields: [bookingId], references: [id])
-  bookingId Int           @unique
-  updatedAt DateTime      @updatedAt
-  createdAt DateTime      @default(now())
+  id            Int           @id @default(autoincrement())
+  user          user          @relation(fields: [userId], references: [id])
+  userId        Int
+  amount        Float
+  paymentId     String        @unique
+  paidAt        DateTime?     @db.Date
+  status        paymentStatus @default(pending)
+  booking       booking       @relation(fields: [bookingId], references: [id])
+  bookingId     Int           @unique
+  failureReason String?
+  updatedAt     DateTime      @updatedAt
+  createdAt     DateTime      @default(now())
 }
 
 model booking {
@@ -73,6 +74,7 @@ model booking {
   status                BookingStatus @default(PENDING)
   checkIn               DateTime      @db.Date
   checkOut              DateTime      @db.Date
+  currency            String     @default("EGP")
   holderEmail           String
   holderFirstName       String
   holderLastName        String
@@ -80,13 +82,11 @@ model booking {
   refundAmount          Int?
   cancellationFees      Int?
   cancellationReference String?
+  paymentType           PaymentType
   rooms                 bookingRoom[]
   payment               payment?
   user                  user          @relation(fields: [userId], references: [id])
   createdAt             DateTime      @default(now())
-  room                  room?         @relation(fields: [roomId], references: [id])
-  roomId                Int?
-
   @@index([checkIn, checkOut])
 }
 
@@ -98,7 +98,6 @@ model bookingRoom {
   hotelId    Int
   room       room    @relation(fields: [roomCode, hotelId], references: [code, hotelId])
   guestsData Json?
-
   rateKey       String
   price         Decimal  @db.Decimal(10, 2)
   adultsCount   Int
@@ -166,10 +165,9 @@ model room {
   description  String?
   roomCategory String
   facilities   roomFacilities[]
-  bookings     booking[]
   bookingRooms bookingRoom[]
-    updatedAt       DateTime          @updatedAt
-  createdAt       DateTime          @default(now())
+  updatedAt    DateTime         @updatedAt
+  createdAt    DateTime         @default(now())
 
   @@unique([code, hotelId])
   @@index([hotelId, code])
@@ -250,4 +248,9 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+}
+
+enum PaymentType {
+  AT_WEB
+  AT_HOTEL
 }

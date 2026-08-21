@@ -66,7 +66,7 @@ export class EmailWorker extends WorkerHost {
           emailSubject,
         }),
       );
-      this.logger.info(`email have send successfully :${n8nResponse}`);
+      this.logger.info(`email have send successfully :${n8nResponse.data}`);
     } catch (err) {
       this.logger.error(`err :${err}`)
     }

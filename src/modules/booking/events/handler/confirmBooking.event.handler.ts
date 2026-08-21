@@ -37,9 +37,10 @@ export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent>
     await this.notificationRepo.create({
       userId: user.id,
       title: NotificationTitle.createdBooking,
-      content: notificationContent.confirmedBooking[
-        NotificationTitle.confirmedBooking
-      ](booking.bookingNumber),
+      content: notificationContent[NotificationTitle.confirmedBooking](
+        booking.bookingNumber,
+        booking.totalPrice,
+      ),
     });
     await this.emailQueue.sendEmailJob(emailType.createdBooking, user.email, {
       username: user.name,

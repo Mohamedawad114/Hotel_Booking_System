@@ -1,6 +1,6 @@
 import { SearchAvailabilityDto } from '../dto/checkAvailability.dto';
 
-export class SearchAvailabilityQuery {
+export class SearchAvailabilityCommand {
   constructor(
     public readonly hotelCode: number,
     public readonly dto: SearchAvailabilityDto,

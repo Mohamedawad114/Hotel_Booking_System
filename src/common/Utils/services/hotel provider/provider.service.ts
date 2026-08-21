@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { BadRequestException, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import * as crypto from 'crypto';
@@ -17,6 +17,8 @@ import {
 } from 'src/common/interfaces';
 import { BookingInput } from 'src/modules/booking/dto/booking.dto';
 import { SearchAvailabilityDto } from 'src/modules/booking/dto/checkAvailability.dto';
+import axios, { AxiosError } from 'axios';
+import { AnyARecord } from 'dns';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;
@@ -232,31 +234,46 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
 
   async checkAvailability(hotelCode: number, dto: SearchAvailabilityDto) {
     try {
+      if (dto.children && dto.children > 0) {
+        if (!dto.childrenAges || dto.childrenAges.length !== dto.children) {
+          throw new BadRequestException(
+            `You must provide ages for all ${dto.children} children`,
+          );
+        }
+      }
+      const checkInDate = new Date(dto.checkIn).toISOString().split('T')[0];
+      const checkOutDate = new Date(dto.checkOut).toISOString().split('T')[0];
+      const occupancy: any = {
+        rooms: 1,
+        adults: Number(dto.adults),
+        children: Number(dto.children) || 0,
+      };
+      if (dto.childrenAges?.length) {
+        occupancy.paxes = dto.childrenAges.map((c: any) => ({
+          type: 'CH',
+          age: typeof c === 'number' ? c : c.age,
+        }));
+      }
       const payload = {
         stay: {
-          checkIn: dto.checkIn,
-          checkOut: dto.checkOut,
+          checkIn: checkInDate,
+          checkOut: checkOutDate,
         },
-        occupancies: [
-          {
-            rooms: 1,
-            adults: dto.adults,
-            children: dto.children,
-          },
-        ],
+        occupancies: [occupancy],
         hotels: {
-          hotel: hotelCode,
+          hotel: [Number(hotelCode)],
         },
       };
-      const response$ = this.httpService.post(
-        '/hotel-content-api/1.0/hotels',
-        payload,
-      );
+      const response$ = this.httpService.post('/hotel-api/1.0/hotels', payload);
       const response = await firstValueFrom(response$);
-      const availabilityData = response.data?.hotels?.hotels;
-      return availabilityData;
-    } catch (err) {
-      this.logger.error("can't check availability", err);
+      return response.data?.hotels?.hotels;
+    } catch (err: any) {
+      if (err instanceof AxiosError) {
+        console.dir(err.response?.data, { depth: null });
+        throw new BadRequestException(
+          err.response?.data || 'Hotelbeds Invalid Payload',
+        );
+      }
       throw err;
     }
   }
@@ -296,50 +313,49 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
   async confirmBooking(
     hotelCode: number,
     clientReference: string,
-    checkIn: Date,
-    checkOut: Date,
     rooms: IBookingRooms[],
     params: BookingInput,
   ) {
     try {
       const payload = {
-        hotelCode: hotelCode,
-        checkIn: checkIn.toISOString().split('T')[0],
-        checkOut: checkOut.toISOString().split('T')[0],
-        clientReference: clientReference,
-        rooms: rooms.map((room) => ({
+        holder: {
+          name: params.holder.firstName ?? (params.holder as any).name,
+          surname: params.holder.lastName ?? (params.holder as any).surname,
+        },
+        rooms: rooms.map((room, roomIndex) => ({
           rateKey: room.rateKey,
-          adults: room.adultsCount,
-          children: room.childrenCount,
-          guests: room.guests.map((g) => ({
-            firstName: g.firstName,
-            lastName: g.lastName,
-            age: g.age,
+          paxes: room.guests.map((g) => ({
+            roomId: roomIndex + 1,
+            type: g.age && g.age < 18 ? 'CH' : 'AD',
+            name: g.firstName,
+            surname: g.lastName,
+            ...(g.age !== undefined && { age: g.age }),
           })),
         })),
-        holder: params.holder,
-        paymentType: this.config.get<string>('PAYMENT_TYPE'),
+        clientReference: clientReference,
+        paymentType: params.paymentType,
       };
+
       const response = await firstValueFrom(
         this.httpService.post('/hotel-api/1.0/bookings', payload),
       );
-
       const booking = response.data?.booking;
       const data = {
         reference: booking.reference,
         status: booking.status,
+        paymentType: params.paymentType,
         totalPrice: booking.totalNet,
         checkIn: new Date(booking.hotel.checkIn),
         checkOut: new Date(booking.hotel.checkOut),
-        rooms: (booking.hotel.rooms || []).map((r: any) => {
-          const originalRoom = rooms.find(
-            (reqRoom) => reqRoom.rateKey === r.rateKey,
-          );
+        currency: booking.currency || booking.hotel?.currency || 'EGP',
+        rooms: (booking.hotel.rooms || []).map((r: any, i: number) => {
+          const originalRoom = rooms[i];
+          const roomPrice = r.rates && r.rates.length > 0 ? r.rates[0].net : 0;
           return {
             code: r.code,
             hotelId: hotelCode,
-            rateKey: r.rateKey,
-            price: r.rate?.net ?? 0,
+            rateKey: originalRoom?.rateKey,
+            price: Number(roomPrice),
             adultsCount: originalRoom?.adultsCount ?? 0,
             childrenCount: originalRoom?.childrenCount ?? 0,
             guests: originalRoom?.guests || [],
@@ -348,26 +364,48 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
         holder: params.holder,
       };
       return data;
-    } catch (err: any) {
-      this.logger.error(`Failed to confirm booking: ${err.message}`);
-      throw err;
+    } catch (error: any) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          'Hotelbeds Error Detail:',
+          JSON.stringify(error.response?.data, null, 2),
+        );
+        throw new BadRequestException(
+          error.response?.data || 'Hotelbeds Booking Failed',
+        );
+      }
+      throw error;
     }
   }
+
   async CancelBooking(providerReference: string) {
-    const response = await firstValueFrom(
-      this.httpService.delete(`/hotel-api/1.0/bookings/${providerReference}`, {
-        params: {
-          cancellationFlag: 'REAl',
-        },
-      }),
-    );
-    const data = response.data;
-    return {
-      success: true,
-      cancellationReference: data.booking?.cancellationReference,
-      refundAmount: Number(data.cancellationAmount?.refund ?? 0),
-      cancellationFee: Number(data.booking?.cancellationFees ?? 0),
-    };
+    try {
+      const response = await firstValueFrom(
+        this.httpService.delete(
+          `/hotel-api/1.0/bookings/${providerReference}`,
+          {
+            params: {
+              cancellationFlag: 'CANCELLATION',
+            },
+          },
+        ),
+      );
+      const data = response.data;
+      return {
+        success: true,
+        cancellationReference: data.booking?.cancellationReference,
+        refundAmount: Number(data.cancellationAmount?.refund ?? 0),
+        cancellationFee: Number(data.booking?.cancellationFees ?? 0),
+      };
+    } catch (error: any) {
+      this.logger.error({
+        status: error.response?.status,
+        data: error.response?.data,
+        url: error.config?.url,
+        method: error.config?.method,
+      });
+      throw error;
+    }
   }
   private extractRoomData(hotelCode: number, apiRooms: any[]) {
     const rooms: IRoom[] = [];

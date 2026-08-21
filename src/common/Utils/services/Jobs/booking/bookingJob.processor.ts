@@ -29,10 +29,12 @@ export class BookingJobProcessor extends WorkerHost {
         },
       },
     );
-    if (!booking) this.logger.info('booking is confirmed');
+    if (!booking) {
+      this.logger.info('booking is confirmed');
+      return;
+    }
     await this.bookingService.cancelBooking(user.id, booking.providerReference);
-    await this.emailQueue.sendEmailJob(emailType.canceledBooking, user.email,
-      {
+    await this.emailQueue.sendEmailJob(emailType.canceledBooking, user.email, {
       bookingNumber: booking.bookingNumber,
       hotelName: hotelName,
     });

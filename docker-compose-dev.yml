@@ -8,7 +8,7 @@ services:
       - "3000:3000"
     env_file:
       - 'config/dev.env'
-      - './env'
+      - './.env'
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
       interval: 1m30s
@@ -30,7 +30,6 @@ services:
 
   mongo:
     image: mongo:latest
-    container_name: mongo-con
     restart: unless-stopped
     volumes:
       - mongo-data:/data/db
@@ -46,13 +45,15 @@ services:
   postgres:
     image: postgres:latest
     container_name: postgres-con
+    ports:
+    - "5433:5432"
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: hotel_booking
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     networks:
       - app-network
     healthcheck:
@@ -81,10 +82,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: redis-con
     restart: unless-stopped
-    ports:
-      - "6380:6379"
     volumes:
       - redis-data:/data
     networks:

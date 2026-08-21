@@ -6,3 +6,4 @@ export * from './room.repository';
 export * from './favorite.repository';
 export * from './review.repository';
 export * from './booking.repository';
+export * from './payment.repository';

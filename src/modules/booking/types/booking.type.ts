@@ -6,7 +6,7 @@ import {
   ID,
   registerEnumType,
 } from '@nestjs/graphql';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus, PaymentType } from '@prisma/client';
 registerEnumType(BookingStatus, {
   name: 'BookingStatus',
 });
@@ -39,8 +39,8 @@ export class BookingRoomType {
   adultsCount!: number;
   @Field(() => Int)
   childrenCount!: number;
-  @Field(() => GuestType, { nullable: true })
-  guestsData?: GuestType;
+  @Field(() => [GuestType], { nullable: true })
+  guestsData?: GuestType[];
   @Field(() => Date)
   createdAt!: Date;
 }
@@ -78,6 +78,8 @@ export class BookingType {
   cancellationFees?: number;
   @Field(() => String, { nullable: true })
   cancellationReference?: string;
+  @Field(() => PaymentType)
+  paymentType!: PaymentType;   
   @Field(() => [BookingRoomType])
   rooms!: BookingRoomType[];
   @Field(() => Date)

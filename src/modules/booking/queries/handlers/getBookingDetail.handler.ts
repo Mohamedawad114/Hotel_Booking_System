@@ -13,7 +13,7 @@ import { Sys_Role } from 'src/common/enums';
 export class GetBookingDetailsHandler implements IQueryHandler<GetBookingDetails> {
   constructor(private readonly bookingRepo: BookingRepository) {}
 
-  async execute(query: GetBookingDetails): Promise<any> {  //graphql
+  async execute(query: GetBookingDetails): Promise<any> {  
     const { bookingId, user } = query;
     if (!bookingId) throw new NotFoundException('booking id is required');
     const booking = await this.bookingRepo.findUnique(
@@ -22,7 +22,6 @@ export class GetBookingDetailsHandler implements IQueryHandler<GetBookingDetails
         include: {
           rooms: true,
           payment: true,
-          user: true,
         },
       },
     );

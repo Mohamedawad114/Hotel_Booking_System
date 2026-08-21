@@ -6,8 +6,11 @@ import cookieParser from 'cookie-parser';
 import { PinoLogger } from 'nestjs-pino';
 import { SwaggerModule } from '@nestjs/swagger';
 import { swaggerConfig } from 'config/swagger.config';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+  });
   const logger = new PinoLogger({
     pinoHttp: {},
     renameContext: 'nestContext',

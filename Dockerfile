@@ -7,11 +7,11 @@ COPY package*.json ./
 FROM base as dev
 
 ENV NODE_ENV=development
-RUN  npm Ci 
+RUN  npm ci 
 COPY . .
 RUN npx prisma generate
 ENTRYPOINT [ "/sbin/tini", "--" ]
-CMD ["npm","run","start:dev"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:dev"]
 
 FROM base AS builder
 ENV NODE_ENV=development

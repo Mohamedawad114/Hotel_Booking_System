@@ -1,9 +1,11 @@
-import { Field, InputType, Int } from '@nestjs/graphql';
+import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
+import { PaymentType } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEmail,
+  IsEnum,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -12,8 +14,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-
-
+registerEnumType(PaymentType,{name:"PaymentType"})
 @InputType()
 export class HoldDto {
   @ApiProperty({ example: 'John', description: 'First name of booking holder' })
@@ -82,4 +83,7 @@ export class BookingInput {
   @Type(() => HoldDto)
   @Field(() => HoldDto)
   holder!: HoldDto;
+  @Field(() => PaymentType)
+    @IsEnum(PaymentType)
+  paymentType!: PaymentType;
 }

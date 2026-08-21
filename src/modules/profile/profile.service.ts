@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import {
+  CloudinaryService,
   CryptoService,
   EmailProducer,
   HashingService,
@@ -31,8 +32,30 @@ export class ProfileService {
     private readonly hashService: HashingService,
     private readonly tokenServices: TokenServices,
     private readonly twoFA: TwoFAService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
+  async uploadPhoto(user: IUser, file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('Image required');
+    const { public_id, secure_url } = await this.cloudinaryService.uploadFile({
+      file,
+      path: `users/${user.id}`,
+    });
+    if (user?.photoId) await this.cloudinaryService.deleteFile(user?.photoId);
+    await this.userRepo.updateOne(
+      { id: user.id },
+      {
+        photoUrl: secure_url,
+        photoId: public_id,
+      },
+    );
+    return {
+      message: 'Photo uploaded successfully',
+      data: {
+        public_id: public_id,
+      },
+    };
+  }
   getProfile = async (user: IUser) => {
     const profile = await this.userRepo.findById(user.id, {
       omit: {
@@ -110,26 +133,26 @@ export class ProfileService {
     res.clearCookie('refreshToken');
     return { message: 'password is changed successfully' };
   };
-  resetPasswordReq = async (user: IUser) => {
-    this.emailQueue.sendEmailJob(emailType.resetPassword, user.email);
+  resetPasswordReq = async (email: string) => {
+    this.emailQueue.sendEmailJob(emailType.resetPassword, email);
     return { message: `OTP is sent` };
   };
-  async resendOTP_reset(user: IUser) {
-    this.emailQueue.sendEmailJob(emailType.resetPassword, user.email);
+  async resendOTP_reset(email: string) {
+    this.emailQueue.sendEmailJob(emailType.resetPassword, email);
     return { message: `OTP is sent` };
   }
   resetPasswordConfirm = async (
-    user: IUser,
+    email: string,
     Dto: ResetPasswordDto,
     res: Response,
   ) => {
-    if (!user) throw new BadRequestException('user not found');
-    const savedOTP = await redis.getdel(redisKeys.resetPassword(user.email));
+    if (!email) throw new BadRequestException('email not found');
+    const savedOTP = await redis.getdel(redisKeys.resetPassword(email));
     if (!savedOTP) throw new BadRequestException(`expire OTP.`);
     const isMatch = await this.hashService.compare_hash(Dto.OTP, savedOTP);
     if (!isMatch) throw new BadRequestException(`Invalid OTP`);
-    await this.userRepo.updateOne(
-      { id: user.id },
+    const user = await this.userRepo.updateOne(
+      { email: email },
       { password: Dto.newPassword },
     );
     const keys = await redis.keys(redisKeys.refreshToken(user.id, '*'));

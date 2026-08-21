@@ -75,7 +75,7 @@ export class CancelBookingHandler implements ICommandHandler<CancelBookingComman
       const updatedBooking = await this.bookingRepo.cancelWithRefund(
         booking.id,
         {
-          refundAmount: cancellationResult.refundAmount, /// build payment model
+          refundAmount: cancellationResult.refundAmount, 
           cancellationFee: cancellationResult.cancellationFee,
         },
       );

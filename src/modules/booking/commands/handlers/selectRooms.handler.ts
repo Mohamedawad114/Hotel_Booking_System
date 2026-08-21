@@ -14,7 +14,7 @@ export class SelectRoomsHandler implements ICommandHandler<SelectRoomsCommand> {
     await redis.setex(key, TTL.selectionRooms, JSON.stringify(data));
     return {
       message: `${data.rooms.length} room(s) selected`,
-      roomSelections: data.rooms,
+     data:{ roomSelections: data.rooms},
     };
   }
 }

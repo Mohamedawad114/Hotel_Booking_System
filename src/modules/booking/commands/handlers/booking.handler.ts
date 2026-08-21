@@ -28,7 +28,7 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
 
   async execute(command: BookingCommand) {
     const { user, hotelCode, idempotencyKey, dto } = command;
-    const bookingNumber = `BK-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const bookingNumber = `BK-${Date.now()}-${Math.floor(10 + Math.random() * 90)}`;
     const userLockKey = redisKeys.userLock(user.id);
     const userLockAcquired = await redis.set(
       userLockKey,
@@ -86,13 +86,10 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
         childrenCount: s.children,
         guests: dto.rooms[i].guests,
       }));
-      const checkIn = new Date(data.checkIn);
-      const checkOut = new Date(data.checkOut);
+
       const booking = await this.providerServices.confirmBooking(
         hotelCode,
         bookingNumber,
-        checkIn,
-        checkOut,
         rooms,
         dto,
       );
@@ -100,7 +97,7 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
       const bookingCreated = await this.bookingRepository.createBooking(
         user.id,
         bookingNumber,
-        booking,
+        booking!,
       );
       await redis.setex(
         lockKey,

@@ -1,3 +1,5 @@
+import { PaymentType } from '@prisma/client';
+
 export interface Guest {
   firstName: string;
   lastName: string;
@@ -22,6 +24,7 @@ export interface IConfirmBookingResult {
   totalPrice: number;
   checkIn: Date;
   checkOut: Date;
+  paymentType: PaymentType;
   rooms: {
     code: string;
     hotelId: number;
@@ -39,14 +42,6 @@ export interface IBooking extends IConfirmBookingResult {
   cancellationReference: string;
   cancellationFees: number;
 }
-// export interface IConfirmBookingInput {
-//   hotelCode: number;
-//   clientReference: string;
-//   checkIn: Date;
-//   checkOut: Date;
-//   rooms: IBookingRooms[];
-//   holder: IHolderInfo;
-// }
 export interface ICancelBookingData {
   refundAmount: number;
   cancellationFee: number;

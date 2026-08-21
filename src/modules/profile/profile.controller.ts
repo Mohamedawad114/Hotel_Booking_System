@@ -8,6 +8,10 @@ import {
   Req,
   HttpCode,
   Put,
+  Query,
+  Post,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { type IUser } from 'src/common/interfaces';
 import { Auth, AuthUser } from 'src/common/decorator';
@@ -24,6 +28,8 @@ import {
 import { Sys_Role } from 'src/common/enums';
 import { ProfileService } from './profile.service';
 import { Throttle } from '@nestjs/throttler';
+import { diskStorage } from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
 @ApiTags('profile')
@@ -32,12 +38,18 @@ import { Throttle } from '@nestjs/throttler';
 export class ProfileController {
   constructor(private readonly profileServices: ProfileService) {}
 
-  //   @Get('upload')
-  //   @ApiOperation({ summary: 'Get upload profile picture data (presigned URL)' })
-  //   @ApiQuery({ type: uploadDto })
-  //   async UploadPic(@AuthUser() user: IUser, @Query() type: uploadDto) {
-  //     return await this.profileServices.upload(user, type);
-  //   }
+  @Post('photo')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({}),
+    }),
+  )
+  async uploadPhoto(
+    @UploadedFile() file: Express.Multer.File,
+    @AuthUser() user: IUser,
+  ) {
+    return this.profileServices.uploadPhoto(user, file);
+  }
   @Get('')
   @ApiOperation({ summary: 'Get current authenticated user profile' })
   async Profile(@AuthUser() user: IUser) {
@@ -45,14 +57,14 @@ export class ProfileController {
   }
   @Get('reset-passwordReq')
   @ApiOperation({ summary: 'Request password reset OTP' })
-  async resetPasswordReq(@AuthUser() user: IUser) {
-    return await this.profileServices.resetPasswordReq(user);
+  async resetPasswordReq(@Query('email') email: string) {
+    return await this.profileServices.resetPasswordReq(email);
   }
 
   @Get('resend-OTP-reset')
   @ApiOperation({ summary: 'Resend reset password OTP' })
-  async resendOTP_reset(@AuthUser() user: IUser) {
-    return await this.profileServices.resendOTP_reset(user);
+  async resendOTP_reset(@Query('email') email: string) {
+    return await this.profileServices.resendOTP_reset(email);
   }
   @Get('setup-2fa')
   @ApiOperation({ summary: 'setup 2fa' })
@@ -88,11 +100,11 @@ export class ProfileController {
   @ApiResponse({ status: 200, description: 'Password reset successfully' })
   @ApiBadRequestResponse({ description: 'Invalid OTP or OTP expired' })
   async resetPassword(
-    @AuthUser() user: IUser,
+    @Query('email') email: string,
     @Body() dto: ResetPasswordDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.profileServices.resetPasswordConfirm(user, dto, res);
+    return await this.profileServices.resetPasswordConfirm(email, dto, res);
   }
   @Patch('/enable-2fa')
   @Throttle({ verifyTwoFA: { ttl: 60, limit: 12 } })

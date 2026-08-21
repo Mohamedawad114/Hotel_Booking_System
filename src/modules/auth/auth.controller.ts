@@ -54,6 +54,8 @@ export class AuthController {
   ) {
     return await this.authServices.loginUser(dto, res);
   }
+  @HttpCode(200)
+  @Post('login/2fa')
   @Throttle({ twoFAlogin: { limit: 5, ttl: 60 } })
   @ApiOperation({ summary: 'Login with 2fa' })
   @ApiResponse({

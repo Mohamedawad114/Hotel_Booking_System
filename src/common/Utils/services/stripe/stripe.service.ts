@@ -1,0 +1,76 @@
+import {
+  BadRequestException,
+  Injectable,
+  RawBodyRequest,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { IUser } from 'src/common/interfaces';
+import Stripe from 'stripe';
+
+@Injectable()
+export class StripeServices {
+  private readonly stripe: Stripe;
+
+  constructor(private readonly configService: ConfigService) {
+    this.stripe = new Stripe(
+      this.configService.getOrThrow<string>('STRIPE_SECRET'),
+    );
+  }
+
+  async createCustomerId(user: IUser): Promise<string> {
+    const customer = await this.stripe.customers.create({
+      name: user.name,
+      email: user.email,
+      metadata: { userId: user.id },
+    });
+    return customer.id;
+  }
+  async pay(data: Stripe.PaymentIntentCreateParams) {
+    try {
+      const payment = await this.stripe.paymentIntents.create({
+        amount: Math.round(data.amount * 100),
+        currency: data.currency,
+        customer: data.customer,
+        automatic_payment_methods: { enabled: true },
+        metadata: data.metadata,
+        capture_method: data.capture_method,
+        off_session: data.off_session,
+        amount_details: data.amount_details,
+      });
+      return { clientSecret: payment.client_secret, id: payment.id };
+    } catch (err: any) {
+      throw new BadRequestException(
+        `payment failed: ${err.message || 'Unknown stripe error'}`,
+      );
+    }
+  }
+  async refund(paymentId: string, amount?: number) {
+    try {
+      return await this.stripe.refunds.create({
+        payment_intent: paymentId,
+        ...(amount && { amount: Math.round(amount * 100) }),
+      });
+    } catch (error: any) {
+      throw new BadRequestException(
+        `Refund failed: ${error.message || 'Unknown stripe error'}`,
+      );
+    }
+  }
+  async webhook(req: RawBodyRequest<Request>) {
+    const signature = req.headers['stripe-signature'];
+    const payload = req.rawBody;
+    if (!signature || !payload) {
+      throw new BadRequestException('Missing stripe-signature or raw body');
+    }
+    try {
+      const event: Stripe.Event = this.stripe.webhooks.constructEvent(
+        payload,
+        signature,
+        this.configService.getOrThrow<string>('WEBHOOK_SECRET'),
+      );
+      return event;
+    } catch (err: any) {
+      throw new BadRequestException(`Webhook Error: ${err.message}`);
+    }
+  }
+}

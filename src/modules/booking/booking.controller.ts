@@ -7,6 +7,8 @@ import {
   ParseIntPipe,
   Param,
   Delete,
+  Post,
+  Body,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -22,8 +24,10 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GetBookingsQuery } from './queries/getBookings.query';
 import { GetBookingDetails } from './queries/getBooking.query';
 import { CancelBookingCommand } from './commands/cancelBooking.command';
-import { SearchAvailabilityQuery } from './queries/searchAvailabilty.query';
+import { SearchAvailabilityCommand } from './commands/searchAvailability.command';
 import { SearchAvailabilityDto } from './dto/checkAvailability.dto';
+import { SelectRoomsCommand } from './commands/selectRooms.command';
+import { type ISessionData } from 'src/common/interfaces/roomSelect.interface';
 
 @ApiTags('booking')
 @ApiBearerAuth('access-token')
@@ -45,6 +49,37 @@ export class BookingController {
   ) {
     return await this.commandBus.execute(
       new CancelBookingCommand(user, bookingId, key),
+    );
+  }
+  @Post('/:hotelId/searchAvailability')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'search rooms availability' })
+  @ApiResponse({
+    status: 200,
+    description: 'search rooms availability',
+  })
+  async searchAvailability(
+    @Param('hotelId', ParseIntPipe) id: number,
+    @Body() Dto: SearchAvailabilityDto,
+  ) {
+    return await this.commandBus.execute(
+      new SearchAvailabilityCommand(id, Dto),
+    );
+  }
+  @Post('/:hotelId/selectRooms')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'select rooms ' })
+  @ApiResponse({
+    status: 200,
+    description: 'select rooms ',
+  })
+  async selectRooms(
+    @AuthUser() user: IUser,
+    @Param('hotelId', ParseIntPipe) id: number,
+    @Body() Dto: ISessionData,
+  ) {
+    return await this.commandBus.execute(
+      new SelectRoomsCommand(Dto, user.id, id),
     );
   }
   @Get('')
@@ -74,20 +109,5 @@ export class BookingController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return await this.queryBus.execute(new GetBookingDetails(user, id));
-  }
-  @Get('/:hotelId/searchAvailability')
-  @HttpCode(200)
-  @ApiOperation({ summary: 'search rooms availability' })
-  @ApiResponse({
-    status: 200,
-    description: 'search rooms availability',
-  })
-  async searchAvailability(
-    @Param('hotelId', ParseIntPipe) id: number,
-    @Query() queryDto: SearchAvailabilityDto,
-  ) {
-    return await this.queryBus.execute(
-      new SearchAvailabilityQuery(id, queryDto),
-    );
   }
 }
