@@ -5,5 +5,6 @@ export class CancelBookingCommand {
     public readonly user: IUser,
     public readonly bookingId: number,
     public readonly key: string,
+    public readonly reason:string
   ) {}
 }

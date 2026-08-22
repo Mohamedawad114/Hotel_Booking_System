@@ -10,7 +10,8 @@ export interface IUser {
   isTwoFA?:boolean
   street: string;
   phone: string;
-  photo?: string;
+  photoId?: string;
+  photoUrl?: string;
   isConfirmed: boolean;
   role?: Sys_Role;
   date_birth: Date;

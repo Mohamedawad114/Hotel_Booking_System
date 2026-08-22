@@ -45,10 +45,11 @@ export class BookingController {
   async cancelBooking(
     @AuthUser() user: IUser,
     @Param('bookingId', ParseIntPipe) bookingId: number,
+    @Body('reason') reason: string,
     @IdempotencyKey() key: string,
   ) {
     return await this.commandBus.execute(
-      new CancelBookingCommand(user, bookingId, key),
+      new CancelBookingCommand(user, bookingId, key, reason),
     );
   }
   @Post('/:hotelId/searchAvailability')

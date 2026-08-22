@@ -24,6 +24,7 @@ export interface IConfirmBookingResult {
   totalPrice: number;
   checkIn: Date;
   checkOut: Date;
+  currency: string;
   paymentType: PaymentType;
   rooms: {
     code: string;

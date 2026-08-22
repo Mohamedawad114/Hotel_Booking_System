@@ -79,6 +79,7 @@ type BookingType {
   cancellationFees: Int
   cancellationReference: String
   paymentType: PaymentType!
+  currency: String!
   rooms: [BookingRoomType!]!
   createdAt: DateTime!
 }
@@ -109,7 +110,7 @@ enum paymentStatus {
   pending
   completed
   failed
-  canceled
+  Refund
 }
 
 type bookingDetails {
@@ -129,6 +130,7 @@ type bookingDetails {
   cancellationFees: Int
   cancellationReference: String
   paymentType: PaymentType!
+  currency: String!
   rooms: [BookingRoomType!]!
   createdAt: DateTime!
   payment: Payment

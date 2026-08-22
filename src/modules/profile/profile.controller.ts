@@ -31,13 +31,12 @@ import { Throttle } from '@nestjs/throttler';
 import { diskStorage } from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-@Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
 @ApiTags('profile')
 @ApiBearerAuth('access-token')
 @Controller('profile')
 export class ProfileController {
   constructor(private readonly profileServices: ProfileService) {}
-
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Post('photo')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -50,6 +49,7 @@ export class ProfileController {
   ) {
     return this.profileServices.uploadPhoto(user, file);
   }
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Get('')
   @ApiOperation({ summary: 'Get current authenticated user profile' })
   async Profile(@AuthUser() user: IUser) {
@@ -66,11 +66,13 @@ export class ProfileController {
   async resendOTP_reset(@Query('email') email: string) {
     return await this.profileServices.resendOTP_reset(email);
   }
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Get('setup-2fa')
   @ApiOperation({ summary: 'setup 2fa' })
   async enable2FA(@AuthUser() user: IUser) {
     return await this.profileServices.setup2FA(user);
   }
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Put('update-profile')
   @ApiOperation({ summary: 'Update profile data' })
   @ApiBody({ type: UpdateProfileDto })
@@ -79,6 +81,7 @@ export class ProfileController {
   async updateProfile(@AuthUser() user: IUser, @Body() dto: UpdateProfileDto) {
     return await this.profileServices.updateProfile(user, dto);
   }
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Patch('update-password')
   @ApiOperation({ summary: 'Update current password' })
   @ApiBody({ type: UpdatePasswordDto })
@@ -106,6 +109,7 @@ export class ProfileController {
   ) {
     return await this.profileServices.resetPasswordConfirm(email, dto, res);
   }
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Patch('/enable-2fa')
   @Throttle({ verifyTwoFA: { ttl: 60, limit: 12 } })
   @ApiBody({
@@ -125,20 +129,14 @@ export class ProfileController {
     return await this.profileServices.verifySetup2FA(user, code);
   }
 
-  //   @Patch('update-profile-picture')
-  //   @HttpCode(200)
-  //   @ApiOperation({ summary: 'Update profile picture' })
-  //   @ApiBody({ type: UpdateUploadDto })
-  //   async updateUpload(@AuthUser() user: IUser, @Body() dto: UpdateUploadDto) {
-  //     return await this.profileServices.updateUpload(dto, user);
-  //   }
-
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Delete('logout')
   @HttpCode(200)
   @ApiOperation({ summary: 'Logout from current device' })
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return await this.profileServices.logout(req, res);
   }
+  @Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
   @Delete('logoutAll')
   @HttpCode(200)
   @ApiOperation({ summary: 'Logout from all devices' })

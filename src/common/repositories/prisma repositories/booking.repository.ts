@@ -40,6 +40,7 @@ export class BookingRepository extends BaseRepository<
               ? BookingStatus.PENDING
               : BookingStatus.CONFIRMED,
           checkOut: data.checkOut,
+          currency: data.currency,
           holderFirstName: data.holder.firstName,
           holderLastName: data.holder.lastName,
           holderEmail: data.holder.email,

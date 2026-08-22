@@ -335,7 +335,6 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
         clientReference: clientReference,
         paymentType: params.paymentType,
       };
-
       const response = await firstValueFrom(
         this.httpService.post('/hotel-api/1.0/bookings', payload),
       );

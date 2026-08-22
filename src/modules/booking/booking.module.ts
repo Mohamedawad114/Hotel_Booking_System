@@ -12,8 +12,9 @@ import { notificationModel } from 'src/common/DB';
 import { BookingResolver } from './booking.resolver';
 import { SearchAvailabilityHandler } from './commands/handlers/searchAvailability.handler';
 import { BookingHandler } from './commands/handlers/booking.handler';
+import { PaymentModule } from '../payment/payment.module';
 @Module({
-  imports: [CqrsModule, BookingJobModule, EmailModule, notificationModel],
+  imports: [CqrsModule, BookingJobModule, EmailModule, notificationModel,PaymentModule],
   controllers: [BookingController],
   providers: [
     BookingRepository,

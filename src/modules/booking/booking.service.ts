@@ -23,7 +23,6 @@ export class BookingService {
         {
           userId: userId,
           providerReference: bookingReference,
-          status: BookingStatus.PENDING,
         },
         {
           status: BookingStatus.CANCELLED,

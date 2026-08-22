@@ -45,7 +45,6 @@ export class BookingRoomType {
   createdAt!: Date;
 }
 
-
 @ObjectType()
 export class BookingType {
   @Field(() => ID)
@@ -79,10 +78,11 @@ export class BookingType {
   @Field(() => String, { nullable: true })
   cancellationReference?: string;
   @Field(() => PaymentType)
-  paymentType!: PaymentType;   
+  paymentType!: PaymentType;
+  @Field(() => String)
+  currency!: string;
   @Field(() => [BookingRoomType])
   rooms!: BookingRoomType[];
   @Field(() => Date)
   createdAt!: Date;
 }
-

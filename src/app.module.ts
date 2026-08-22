@@ -24,6 +24,7 @@ import {
   ReviewModule,
   RoomModule,
   NotificationModule,
+  PaymentModule,
 } from './modules';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullBoardModule } from '@bull-board/nestjs';
@@ -81,6 +82,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     ReviewModule,
     BookingModule,
     NotificationModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [

@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IUser } from 'src/common/interfaces';
+import { StripeInput } from 'src/modules/payment/Dto/stripeInput.dto';
 import Stripe from 'stripe';
 
 @Injectable()
@@ -25,17 +26,22 @@ export class StripeServices {
     });
     return customer.id;
   }
-  async pay(data: Stripe.PaymentIntentCreateParams) {
+  async pay(data: StripeInput) {
     try {
       const payment = await this.stripe.paymentIntents.create({
         amount: Math.round(data.amount * 100),
-        currency: data.currency,
-        customer: data.customer,
+        currency: data.currency.toLowerCase(),
+        customer: data.customerId,
+        receipt_email: data.email,
         automatic_payment_methods: { enabled: true },
-        metadata: data.metadata,
-        capture_method: data.capture_method,
-        off_session: data.off_session,
-        amount_details: data.amount_details,
+        capture_method: data.captureMethod,
+        off_session: data.offSession,
+        amount_details: data.amountDetails,
+        metadata: {
+          bookingId: data.bookingId,
+          userId: data.userId,
+          ...data.metadata,
+        },
       });
       return { clientSecret: payment.client_secret, id: payment.id };
     } catch (err: any) {
@@ -44,7 +50,7 @@ export class StripeServices {
       );
     }
   }
-  async refund(paymentId: string, amount?: number) {
+  async refund(paymentId: string, amount: number) {
     try {
       return await this.stripe.refunds.create({
         payment_intent: paymentId,
