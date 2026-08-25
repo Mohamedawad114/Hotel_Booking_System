@@ -24,6 +24,7 @@ export class BookingJobProcessor extends WorkerHost {
       {
         select: {
           id: true,
+          payment: true,
           providerReference: true,
           bookingNumber: true,
         },
@@ -33,7 +34,13 @@ export class BookingJobProcessor extends WorkerHost {
       this.logger.info('booking is confirmed');
       return;
     }
-    await this.bookingService.cancelBooking(user.id, booking.providerReference);
+    const paymentId = booking.payment?.id;
+
+    await this.bookingService.cancelBooking(
+      user.id,
+      booking.providerReference,
+      paymentId,
+    );
     await this.emailQueue.sendEmailJob(emailType.canceledBooking, user.email, {
       bookingNumber: booking.bookingNumber,
       hotelName: hotelName,

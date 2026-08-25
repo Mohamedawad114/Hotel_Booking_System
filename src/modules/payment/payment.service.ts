@@ -2,17 +2,21 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  RawBodyRequest,
 } from '@nestjs/common';
 import { BookingStatus, paymentStatus } from '@prisma/client';
 import {
   BookingRepository,
   PaymentRepository,
+  StripeServices,
   UserRepository,
 } from 'src/common';
 import { PaymentGateway } from 'src/common/enums/paymentGateway.enums';
 import { IUser } from 'src/common/interfaces';
 import { PaymentGatewayFactory } from './payment.factory';
 import { PaymentInput } from './Dto/paymentInput.dto';
+import { Request } from 'express';
+import type { PaymentIntent } from 'stripe';
 
 @Injectable()
 export class PaymentService {
@@ -21,6 +25,7 @@ export class PaymentService {
     private readonly PaymentService: PaymentGatewayFactory,
     private readonly userRepo: UserRepository,
     private readonly paymentRepo: PaymentRepository,
+    private readonly stripeService: StripeServices,
   ) {}
 
   getPaymentGateway() {
@@ -77,7 +82,7 @@ export class PaymentService {
   }
   async refund(bookingId: number, amount: number) {
     const booking = await this.bookingRepo.findOne(
-      { id: bookingId },
+      { id: bookingId, status: BookingStatus.CONFIRMED },
       {
         select: {
           payment: true,
@@ -98,12 +103,51 @@ export class PaymentService {
       );
     }
     const paymentGateway = this.PaymentService.getGateway(
-      booking.paymentGateway,
+      booking.payment.gateway,
     );
     const refundResult = await paymentGateway.refund(
       booking.payment.paymentId,
       amount,
     );
     return refundResult;
+  }
+  async webhook(req: RawBodyRequest<Request>) {
+    const event = await this.stripeService.webhook(req);
+    const paymentObject = event.data.object as PaymentIntent;
+    const { metadata, id: paymentId } = paymentObject;
+    const bookingId = metadata?.bookingId;
+    if (!bookingId) {
+      throw new BadRequestException('Booking ID missing in metadata');
+    }
+    if (event.type === 'payment_intent.succeeded') {
+      await this.bookingRepo.updateOne(
+        {
+          id: Number(bookingId),
+          userId: metadata.userId,
+          status: BookingStatus.PENDING,
+        },
+        {
+          status: BookingStatus.CONFIRMED,
+          payment: {
+            update: {
+              where: { paymentId: paymentId, bookingId: Number(bookingId) },
+              data: { status: paymentStatus.completed },
+            },
+          },
+        },
+      );
+    } else if (event.type === 'payment_intent.payment_failed') {
+      await this.paymentRepo.updateOne(
+        {
+          id: paymentId,
+          bookingId: bookingId,
+          status: paymentStatus.pending,
+        },
+        {
+          status: paymentStatus.failed,
+        },
+      );
+    }
+    return { received: true };
   }
 }

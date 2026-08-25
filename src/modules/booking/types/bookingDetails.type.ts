@@ -1,7 +1,14 @@
-import { Field, Float, Int, ObjectType, registerEnumType } from '@nestjs/graphql';
-import { paymentStatus } from '@prisma/client';
+import {
+  Field,
+  Float,
+  Int,
+  ObjectType,
+  registerEnumType,
+} from '@nestjs/graphql';
+import { PaymentGateway, paymentStatus } from '@prisma/client';
 import { BookingType } from './booking.type';
- registerEnumType(paymentStatus,{name:"paymentStatus"})
+registerEnumType(paymentStatus, { name: 'paymentStatus' });
+registerEnumType(PaymentGateway, { name: 'paymentGateway' });
 @ObjectType()
 export class Payment {
   @Field(() => Float)
@@ -16,6 +23,8 @@ export class Payment {
   bookingId!: number;
   @Field(() => Date)
   updatedAt!: Date;
+  @Field(() => PaymentGateway)
+  gateway!: PaymentGateway;
   @Field(() => Date)
   createdAt!: Date;
 }

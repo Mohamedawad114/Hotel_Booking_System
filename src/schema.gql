@@ -103,6 +103,7 @@ type Payment {
   status: paymentStatus!
   bookingId: Int!
   updatedAt: DateTime!
+  gateway: paymentGateway!
   createdAt: DateTime!
 }
 
@@ -111,6 +112,10 @@ enum paymentStatus {
   completed
   failed
   Refund
+}
+
+enum paymentGateway {
+  stripe
 }
 
 type bookingDetails {

@@ -91,7 +91,7 @@ export class CancelBookingHandler implements ICommandHandler<CancelBookingComman
           cancellationResult.refundAmount,
         );
         const updatedBooking = await this.bookingRepo.updateOne(
-          { id: booking.id },
+          { id: booking.id, userId: user.id },
           {
             status: BookingStatus.CANCELLED,
             refundAmount: cancellationResult.refundAmount,

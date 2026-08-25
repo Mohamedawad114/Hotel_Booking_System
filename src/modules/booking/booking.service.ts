@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BookingStatus } from '@prisma/client';
+import { BookingStatus, paymentStatus } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { BookingRepository, HotelbedsProvider } from 'src/common';
 
@@ -11,7 +11,11 @@ export class BookingService {
     private readonly logger: PinoLogger,
   ) {}
 
-  cancelBooking = async (userId: number, bookingReference: string) => {
+  cancelBooking = async (
+    userId: number,
+    bookingReference: string,
+    paymentId?: string,
+  ) => {
     if (!bookingReference) {
       this.logger.error('booking id is required');
       return;
@@ -19,20 +23,32 @@ export class BookingService {
     const bookingCanceled =
       await this.providerService.CancelBooking(bookingReference);
     if (bookingCanceled.success && bookingCanceled.cancellationReference) {
-      await this.bookingRepo.updateOne(
-        {
-          userId: userId,
-          providerReference: bookingReference,
-        },
-        {
-          status: BookingStatus.CANCELLED,
-          cancellationReference: bookingCanceled.cancellationReference,
-        },
-      );
+      await this.bookingRepo.transaction(async (tx) => {
+        await tx.booking.update({
+          where: {
+            userId: userId,
+            providerReference: bookingReference,
+          },
+          data: {
+            status: BookingStatus.CANCELLED,
+            cancellationReference: bookingCanceled.cancellationReference,
+          },
+        });
+        if (paymentId) {
+          await tx.payment.update({
+            where: { id: Number(paymentId) },
+            data: { status: paymentStatus.failed },
+          });
+        }
+      });
       this.logger.info(
         `booking canceled , cancellationReference :${bookingCanceled.cancellationReference}`,
       );
       return;
+    } else {
+      this.logger.error(
+        `Failed to cancel booking at provider for reference: ${bookingReference}`,
+      );
     }
   };
 }

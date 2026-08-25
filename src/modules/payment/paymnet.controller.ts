@@ -5,6 +5,8 @@ import {
   Param,
   ParseIntPipe,
   Post,
+ type RawBodyRequest,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -17,16 +19,16 @@ import {
 import { Auth, AuthUser } from 'src/common/decorator';
 import { Sys_Role } from 'src/common/enums';
 import type { IUser } from 'src/common/interfaces';
+import  { Request } from 'express';
 import { PaymentInput } from './Dto/paymentInput.dto';
 import { PaymentService } from './payment.service';
 
 @ApiTags('payment')
 @ApiBearerAuth('access-token')
-@Auth(Sys_Role.Admin, Sys_Role.User)
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
-
+  @Auth(Sys_Role.Admin, Sys_Role.User)
   @Post(':bookingId/pay')
   @HttpCode(200)
   @ApiOperation({ summary: 'Initialize payment for a pending booking' })
@@ -60,5 +62,9 @@ export class PaymentController {
     @Body() data: PaymentInput,
   ) {
     return await this.paymentService.pay(user, bookingId, data);
+  }
+  @Post('stripe')
+  async stripeWebhook(@Req() req: RawBodyRequest<Request>) {
+    return await this.paymentService.webhook(req);
   }
 }

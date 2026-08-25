@@ -14,7 +14,13 @@ import { SearchAvailabilityHandler } from './commands/handlers/searchAvailabilit
 import { BookingHandler } from './commands/handlers/booking.handler';
 import { PaymentModule } from '../payment/payment.module';
 @Module({
-  imports: [CqrsModule, BookingJobModule, EmailModule, notificationModel,PaymentModule],
+  imports: [
+    CqrsModule,
+    BookingJobModule,
+    EmailModule,
+    notificationModel,
+    PaymentModule,
+  ],
   controllers: [BookingController],
   providers: [
     BookingRepository,

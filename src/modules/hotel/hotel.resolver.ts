@@ -15,7 +15,7 @@ export class HotelResolver {
 
   @Query(() => HotelsResponse, { name: 'searchHotels' })
   async searchHotels(@Args() args: SearchArgs) {
-    return this.hotelService.getAllHotels(args);
+    return await this.hotelService.getAllHotels(args);
   }
   @ResolveField(() => [HotelPhones], { nullable: true })
   async phones(@Parent() hotel: Hotel) {
