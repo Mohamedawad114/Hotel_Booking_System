@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { Injectable } from '@nestjs/common';
 import { HashingService, redis, redisKeys, TTL } from 'src/common/Utils';
-import { ICreatedBookingEmail } from 'src/common/interfaces/email.interface';
+import { ICreatedBookingEmail, IWebhookQueue } from 'src/common/interfaces/email.interface';
 
 const createOTP = customAlphabet(`0123456789zxcvbnmalksjdhfgqwretruop`, 6);
 @Injectable()
@@ -81,7 +81,7 @@ export class EmailServices {
         <!-- Content -->
         <div style="padding:30px;">
           <p style="font-size:16px;margin-top:0;">
-            Hello <strong>${data.username}</strong>,
+            Hello <strong>${data.name}</strong>,
           </p>
           <p style="font-size:15px;color:#555;line-height:1.6;">
             Your hotel booking has been created successfully.
@@ -148,159 +148,124 @@ export class EmailServices {
   </html>
 `;
   };
-  confirmedBookingEmail = (data: {
-    bookingNumber: string;
-    hotelName: string;
-    checkIn: string;
-    checkOut: string;
-    totalPrice: number;
-    paymentStatus: string;
-    paymentMethod?: string;
-    transactionId?: string;
-  }) => {
+  confirmedBookingEmail = (data: IWebhookQueue) => {
     return `
-    <!DOCTYPE html>
-    <html>
-      <body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#333;">
-
-        <div style="max-width:650px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.08);">
-
-          <!-- Header -->
-          <div style="background:#16a34a;padding:25px;text-align:center;">
-            <h1 style="color:#fff;margin:0;font-size:26px;">
-              Booking Confirmed
-            </h1>
-
-            <p style="color:#dcfce7;margin:8px 0 0;font-size:14px;">
-              Your reservation has been confirmed successfully
-            </p>
-          </div>
-          <div style="padding:30px;">
-            <p style="font-size:15px;color:#555;line-height:1.6;">
-              Your hotel booking has been confirmed successfully.
-              Below you can find your booking and payment details.
-            </p>
-            <!-- Confirmation Status -->
-            <div style="text-align:center;margin:25px 0;">
-              <span style="display:inline-block;padding:12px 25px;background:#dcfce7;color:#15803d;border-radius:30px;font-weight:bold;">
-                ✓ CONFIRMED
-              </span>
-            </div>
-
-            <!-- Booking Number -->
-            <div style="background:#eff6ff;padding:18px;border-radius:8px;margin:20px 0;">
-              <p style="margin:0;color:#64748b;font-size:13px;">
-                Booking Number
-              </p>
-
-              <p style="margin:6px 0 0;font-size:22px;font-weight:bold;color:#2563eb;">
-                #${data.bookingNumber}
-              </p>
-            </div>
-
-            <!-- Booking Details -->
-            <h3 style="color:#1e293b;border-bottom:1px solid #e5e7eb;padding-bottom:10px;">
-              Booking Details
-            </h3>
-
-            <table style="width:100%;border-collapse:collapse;">
-
-              <tr>
-                <td style="padding:9px 0;color:#64748b;">Hotel</td>
-                <td style="padding:9px 0;text-align:right;font-weight:bold;">
-                  ${data.hotelName}
-                </td>
-              </tr>
-
-
-              <tr>
-                <td style="padding:9px 0;color:#64748b;">Check-in</td>
-                <td style="padding:9px 0;text-align:right;">
-                  ${data.checkIn}
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:9px 0;color:#64748b;">Check-out</td>
-                <td style="padding:9px 0;text-align:right;">
-                  ${data.checkOut}
-                </td>
-              </tr>
-                  
-                  : ''
-              }
-            </table>
-            <!-- Payment Details -->
-            <h3 style="color:#1e293b;border-bottom:1px solid #e5e7eb;padding-bottom:10px;margin-top:30px;">
-              Payment Details
-            </h3>
-            <table style="width:100%;border-collapse:collapse;">
-              <tr>
-                <td style="padding:9px 0;color:#64748b;">
-                  Total Price
-                </td>
-                <td style="padding:9px 0;text-align:right;font-size:20px;font-weight:bold;">
-                  ${data.totalPrice} 
-                </td>
-              </tr>
-              <tr>
-                <td style="padding:9px 0;color:#64748b;">
-                  Payment Status
-                </td>
-                <td style="padding:9px 0;text-align:right;color:#16a34a;font-weight:bold;">
-                  ${data.paymentStatus}
-                </td>
-              </tr>
-              ${
-                data.paymentMethod
-                  ? `
-                    <tr>
-                      <td style="padding:9px 0;color:#64748b;">
-                        Payment Method
-                      </td>
-                      <td style="padding:9px 0;text-align:right;">
-                        ${data.paymentMethod}
-                      </td>
-                    </tr>
-                  `
-                  : ''
-              }
-              ${
-                data.transactionId
-                  ? `
-                    <tr>
-                      <td style="padding:9px 0;color:#64748b;">
-                        Transaction ID
-                      </td>
-                      <td style="padding:9px 0;text-align:right;font-size:13px;">
-                        ${data.transactionId}
-                      </td>
-                    </tr>
-                  `
-                  : ''
-              }
-            </table>
-            <!-- Success Message -->
-            <div style="margin-top:25px;padding:16px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;">
-              <p style="margin:0;color:#047857;font-size:14px;line-height:1.6;">
-                Your reservation is confirmed and your payment has been processed.
-                Please keep this email for your records.
-              </p>
-            </div>
-          </div>
-          <!-- Footer -->
-          <div style="background:#f8fafc;padding:20px;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#94a3b8;">
-              Thank you for choosing our service.
-            </p>
-            <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">
-              © 2026 Hotel Booking System. All rights reserved.
-            </p>
-          </div>
+  <!DOCTYPE html>
+  <html>
+    <body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;color:#333;">
+      
+      <div style="max-width:650px;margin:30px auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.08);">
+        
+        <!-- Header -->
+        <div style="background:#16a34a;padding:25px;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:26px;">
+            Booking Confirmed Successfully
+          </h1>
         </div>
-      </body>
-    </html>
-  `;
+
+        <!-- Content -->
+        <div style="padding:30px;">
+          
+          <p style="font-size:16px;margin-top:0;">
+            Hello <strong>${data.name}</strong>,
+          </p>
+
+          <p style="font-size:15px;color:#555;line-height:1.6;">
+            Your hotel booking has been confirmed successfully.
+            Here are your booking details:
+          </p>
+
+          <!-- Booking Number -->
+          <div style="background:#f0fdf4;padding:18px;border-radius:8px;margin:20px 0;">
+            <p style="margin:0;color:#64748b;font-size:13px;">
+              Booking Number
+            </p>
+
+            <p style="margin:6px 0 0;font-size:22px;font-weight:bold;color:#16a34a;">
+              #${data.bookingNumber}
+            </p>
+          </div>
+
+          <!-- Booking Details -->
+          <h3 style="color:#1e293b;border-bottom:1px solid #e5e7eb;padding-bottom:10px;">
+            Booking Details
+          </h3>
+
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              <td style="padding:10px 0;color:#64748b;">
+                Hotel
+              </td>
+              <td style="padding:10px 0;text-align:right;font-weight:bold;color:#1e293b;">
+                ${data.hotelName}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:10px 0;color:#64748b;">
+                Check-in
+              </td>
+              <td style="padding:10px 0;text-align:right;color:#1e293b;">
+                ${data.checkIn}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:10px 0;color:#64748b;">
+                Check-out
+              </td>
+              <td style="padding:10px 0;text-align:right;color:#1e293b;">
+                ${data.checkOut}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:10px 0;color:#64748b;">
+                Total Price
+              </td>
+              <td style="padding:10px 0;text-align:right;font-weight:bold;color:#16a34a;">
+                ${data.totalPrice}
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:10px 0;color:#64748b;">
+                Payment ID
+              </td>
+              <td style="padding:10px 0;text-align:right;color:#1e293b;">
+                ${data.paymentId}
+              </td>
+            </tr>
+          </table>
+
+          <!-- Confirmation Information -->
+          <div style="margin-top:25px;padding:15px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;">
+            <p style="margin:0;color:#166534;font-size:14px;line-height:1.6;">
+              Your booking and payment have been successfully confirmed.
+              Please keep your booking number and payment ID for future reference.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f8fafc;padding:20px;text-align:center;">
+          <p style="margin:0;font-size:12px;color:#94a3b8;">
+            Thank you for choosing our service.
+          </p>
+
+          <p style="margin:8px 0 0;font-size:12px;color:#94a3b8;">
+            © 2026 Hotel Booking System. All rights reserved.
+          </p>
+        </div>
+
+      </div>
+
+    </body>
+  </html>
+`;
   };
+
   canceledBookingEmail = (bookingNumber: string, hotelName: string) => {
     return `
     <!DOCTYPE html>

@@ -86,11 +86,18 @@ export class AuthService {
 
   loginUser = async (Dto: LoginDto, res: Response) => {
     const { email, password } = Dto;
-    const user = await this.userRepo.findByEmail(email);
+    const user = await this.userRepo.findByEmail(email, {
+      select: { id: true, isBanned: true, password: true, isTwoFA: true },
+    });
     if (!user) throw new NotFoundException(`email not found`);
     if (!user.isConfirmed) {
       throw new BadRequestException(
         `email not verified please verify email first`,
+      );
+    }
+    if (user.isBanned) {
+      throw new BadRequestException(
+        'your account has banned please contact the support team',
       );
     }
     const passMatch = await this.hashService.compare_hash(
@@ -112,9 +119,19 @@ export class AuthService {
   };
   TwoFAlogin = async (data: TwoFADto, res: Response) => {
     const user = await this.userRepo.findById(data.id, {
-      select: { secret: true, id: true, name: true, role: true },
+      select: {
+        secret: true,
+        id: true,
+        name: true,
+        role: true,
+        isBanned: true,
+      },
     });
     if (!user) throw new NotFoundException('user not found');
+    if (user.isBanned)
+      throw new NotFoundException(
+        'your account has banned please contact the support team',
+      );
     const secret = this.crypto.decryption(user.secret);
     const isVerified = await this.twoFAService.verifyCode(data.code, secret);
     if (!isVerified) throw new BadRequestException('invalid code');

@@ -13,24 +13,24 @@ import {
 } from 'src/common';
 import { emailType, NotificationTitle } from 'src/common/enums';
 import { CancelBookingEvent } from '../cancelBooking.event';
+import { NotificationService } from 'src/modules/notification/notification.service';
 
 @Injectable()
 @EventsHandler(CancelBookingEvent)
 export class CancelBookingHandler implements IEventHandler<CancelBookingEvent> {
   constructor(
-    private readonly notificationRepo: NotificationRepository,
+    private readonly notificationService: NotificationService,
     private readonly emailQueue: EmailProducer,
   ) {}
   async handle(Event: CancelBookingEvent) {
     const { user, booking, refundAmount } = Event;
     const hotelName = await redis.get(redisKeys.hotelName(booking.id));
-    await this.notificationRepo.create({
-      userId: user.id,
-      title: NotificationTitle.canceledBooking,
-      content: notificationContent.confirmedBooking[
-        NotificationTitle.canceledBooking
-      ](booking.bookingNumber),
-    });
+    await this.notificationService.createNotification(
+      user.id,
+      NotificationTitle.canceledBooking,
+      booking.bookingNumber,
+      booking.totalPrice,
+    );
     if (!refundAmount) {
       await this.emailQueue.sendEmailJob(
         emailType.canceledBooking,

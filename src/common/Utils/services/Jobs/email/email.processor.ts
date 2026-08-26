@@ -6,6 +6,7 @@ import { EmailServices } from './mail.service';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
+import { redisPub } from '../../redis';
 
 @Processor('email', { limiter: { duration: 1000, max: 8 } })
 export class EmailWorker extends WorkerHost {
@@ -37,7 +38,11 @@ export class EmailWorker extends WorkerHost {
         break;
       case emailType.createdBooking:
         emailHtml = this.emailServices.createdBookingEmail(data);
-        emailSubject = emailType.confirmation;
+        emailSubject = emailType.createdBooking;
+        break;
+      case emailType.confirmedBooking:
+        emailHtml = this.emailServices.confirmedBookingEmail(data);
+        emailSubject = emailType.confirmedBooking;
         break;
       case emailType.canceledBooking:
         emailHtml = this.emailServices.canceledBookingEmail(
@@ -58,6 +63,7 @@ export class EmailWorker extends WorkerHost {
         this.logger.warn(`Unknown job type: ${job.name}`);
         throw new Error('Unknown job type');
     }
+
     try {
       const n8nResponse = await firstValueFrom(
         this.httpService.post(this.config.getOrThrow<string>('N8N_URL'), {
@@ -66,9 +72,16 @@ export class EmailWorker extends WorkerHost {
           emailSubject,
         }),
       );
+      if (emailSubject === emailType.confirmedBooking) {
+        await redisPub.publish(
+          'bookingConfirmed',
+          data.bookingNumber,
+          data.totalPrice,
+        );
+      }
       this.logger.info(`email have send successfully :${n8nResponse.data}`);
     } catch (err) {
-      this.logger.error(`err :${err}`)
+      this.logger.error(`err :${err}`);
     }
   }
   @OnWorkerEvent('completed')

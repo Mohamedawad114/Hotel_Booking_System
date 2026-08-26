@@ -7,6 +7,7 @@ import { BookingJobProcessor } from './bookingJob.processor';
 import { BookingRepository } from 'src/common/repositories/prisma repositories';
 import { BookingService } from 'src/modules/booking/booking.service';
 import { EmailModule } from '../email/email.module';
+import { NotificationModule } from 'src/modules';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { EmailModule } from '../email/email.module';
       name: 'booking',
       adapter: BullMQAdapter,
     }),
-    EmailModule
+    EmailModule,
+    NotificationModule,
   ],
   providers: [
     BookingJobProducer,

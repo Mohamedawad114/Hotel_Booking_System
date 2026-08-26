@@ -7,6 +7,7 @@ import {
   BookingRepository,
   PaymentRepository,
   StripeServices,
+  WebhookJobModule,
 } from 'src/common';
 import { PaymentGatewayFactory } from './payment.factory';
 
@@ -20,7 +21,7 @@ import { PaymentGatewayFactory } from './payment.factory';
     StripeServices,
   ],
   controllers: [PaymentController],
-  imports: [notificationModel],
+  imports: [notificationModel, WebhookJobModule],
   exports: [PaymentService],
 })
 export class PaymentModule {}

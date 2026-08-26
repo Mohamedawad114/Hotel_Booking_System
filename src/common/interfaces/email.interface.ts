@@ -1,5 +1,5 @@
 export interface ICreatedBookingEmail {
-  username: string;
+  name: string;
   bookingNumber: string;
   hotelName: string;
   checkIn: string;
@@ -10,3 +10,14 @@ export interface ICancelBookingEmail {
   hotelName: string;
   refundAmount?:number;
 }
+
+export interface IWebhookQueue {
+  name: string;
+  paymentId: string;
+  totalPrice: number;
+  bookingNumber: string;
+  userId: number;
+  hotelName: string;
+  checkIn: string;
+  checkOut: string;
+}  

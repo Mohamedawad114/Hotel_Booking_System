@@ -9,7 +9,7 @@ import { Throttle } from '@nestjs/throttler';
 import { GetBookingDetails } from './queries/getBooking.query';
 import { BookingType } from './types/booking.type';
 import { bookingDetails } from './types/bookingDetails.type';
-@Auth(Sys_Role.User, Sys_Role.Admin)
+@Auth(Sys_Role.User, Sys_Role.Admin, Sys_Role.SuperAdmin)
 @Resolver()
 export class BookingResolver {
   constructor(

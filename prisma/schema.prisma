@@ -23,6 +23,7 @@ model user {
   photoUrl    String?
   photoId     String?
   secret      String?
+  isBanned    Boolean  @default(false)
   isTwoFA     Boolean  @default(false)
   BackupCodes String[]
   isConfirmed Boolean  @default(false)
@@ -51,20 +52,20 @@ model review {
 }
 
 model payment {
-  id            Int           @id @default(autoincrement())
-  user          user          @relation(fields: [userId], references: [id])
+  id            Int            @id @default(autoincrement())
+  user          user           @relation(fields: [userId], references: [id])
   userId        Int
   amount        Float
-  currency      String?       @default("EGP")
-  paymentId     String        @unique
-  gateway         PaymentGateway 
-  paidAt        DateTime?     @db.Date
-  status        paymentStatus @default(pending)
-  booking       booking       @relation(fields: [bookingId], references: [id])
-  bookingId     Int           @unique
+  currency      String?        @default("EGP")
+  paymentId     String         @unique
+  gateway       PaymentGateway
+  paidAt        DateTime?      @db.Date
+  status        paymentStatus  @default(pending)
+  booking       booking        @relation(fields: [bookingId], references: [id])
+  bookingId     Int            @unique
   failureReason String?
-  updatedAt     DateTime      @updatedAt
-  createdAt     DateTime      @default(now())
+  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime       @default(now())
 }
 
 model booking {
@@ -257,6 +258,7 @@ enum PaymentType {
   AT_WEB
   AT_HOTEL
 }
-enum PaymentGateway{
+
+enum PaymentGateway {
   stripe
 }

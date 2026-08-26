@@ -10,7 +10,7 @@ export const redisKeys = {
   secret: (email: string) => `${email}_secret`,
   idempotencyKey: (userId: number, id: number, key: string) =>
     `idempotency:${userId}:${id}:${key}`,
-  socketKey: (userId: string) => `user_sockets:${userId}`,
+  socketKey: (userId: number) => `user_sockets:${userId}`,
   destination: () => `destinations`,
   facility: () => `facilities`,
   getHotels: (query?: SearchArgs, sortField?: string,cursor?:string) =>

@@ -12,13 +12,14 @@ import {
   TTL,
 } from 'src/common';
 import { emailType, NotificationTitle } from 'src/common/enums';
+import { NotificationService } from 'src/modules/notification/notification.service';
 
 @Injectable()
 @EventsHandler(ConfirmBookingEvent)
 export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent> {
   constructor(
     private readonly bookingQueue: BookingJobProducer,
-    private readonly notificationRepo: NotificationRepository,
+    private readonly notificationService: NotificationService,
     private readonly emailQueue: EmailProducer,
     private readonly hotelRepo: HotelRepository,
   ) {}
@@ -34,14 +35,13 @@ export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent>
       hotel.name,
     );
     await this.bookingQueue.addBookingJob(user, hotel.name, booking.id);
-    await this.notificationRepo.create({
-      userId: user.id,
-      title: NotificationTitle.createdBooking,
-      content: notificationContent[NotificationTitle.confirmedBooking](
-        booking.bookingNumber,
-        booking.totalPrice,
-      ),
-    });
+    await this.notificationService.createNotification(
+      user.id,
+      NotificationTitle.createdBooking,
+      booking.bookingNumber,
+      booking.totalPrice,
+    );
+
     await this.emailQueue.sendEmailJob(emailType.createdBooking, user.email, {
       username: user.name,
       ...booking,

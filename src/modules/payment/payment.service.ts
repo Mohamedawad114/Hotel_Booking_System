@@ -10,6 +10,7 @@ import {
   PaymentRepository,
   StripeServices,
   UserRepository,
+  WebhookProducer,
 } from 'src/common';
 import { PaymentGateway } from 'src/common/enums/paymentGateway.enums';
 import { IUser } from 'src/common/interfaces';
@@ -26,6 +27,7 @@ export class PaymentService {
     private readonly userRepo: UserRepository,
     private readonly paymentRepo: PaymentRepository,
     private readonly stripeService: StripeServices,
+    private readonly webhookQueue: WebhookProducer,
   ) {}
 
   getPaymentGateway() {
@@ -120,6 +122,10 @@ export class PaymentService {
       throw new BadRequestException('Booking ID missing in metadata');
     }
     if (event.type === 'payment_intent.succeeded') {
+      const booking = await this.bookingRepo.findById(parseInt(bookingId), {
+        select: { bookingNumber: true, id: true },
+      });
+      if (!booking) return { data: { ignored: true } };
       await this.bookingRepo.updateOne(
         {
           id: Number(bookingId),
@@ -136,6 +142,10 @@ export class PaymentService {
           },
         },
       );
+      await this.webhookQueue.addWebhookJob(
+        Number(bookingId),
+        Number(metadata.userId),
+      );
     } else if (event.type === 'payment_intent.payment_failed') {
       await this.paymentRepo.updateOne(
         {
@@ -147,7 +157,48 @@ export class PaymentService {
           status: paymentStatus.failed,
         },
       );
+      return { data: { failed: true } };
     }
     return { received: true };
   }
+
+  getMyPayments = async (user: IUser, page: number, limit: number) => {
+    const offset = (page - 1) * limit;
+    const [payments, total] = await Promise.all([
+      this.paymentRepo.findMany(
+        { userId: user.id },
+        {
+          take: limit,
+          skip: offset,
+          select: {
+            amount: true,
+            id: true,
+            paymentId: true,
+            paidAt: true,
+            status: true,
+          },
+        },
+      ),
+      this.paymentRepo.count({ userId: user.id }),
+    ]);
+    return {
+      message: 'all your payments',
+      data: payments,
+      meta: {
+        total,
+        pages: Math.round(total / limit),
+      },
+    };
+  };
+  getPaymentDetails = async (user: IUser, paymentId: number) => {
+    const paymentDetails = await this.paymentRepo.findUnique({
+      userId: user.id,
+      id: paymentId,
+    });
+    if (!paymentDetails) throw new NotFoundException('payment not Found');
+    return {
+      message: 'paymentDetails',
+      data: paymentDetails,
+    };
+  };
 }

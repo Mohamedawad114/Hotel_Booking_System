@@ -1,11 +1,14 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
   Post,
- type RawBodyRequest,
+  Query,
+  type RawBodyRequest,
   Req,
 } from '@nestjs/common';
 import {
@@ -13,13 +16,14 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { Auth, AuthUser } from 'src/common/decorator';
 import { Sys_Role } from 'src/common/enums';
 import type { IUser } from 'src/common/interfaces';
-import  { Request } from 'express';
+import { Request } from 'express';
 import { PaymentInput } from './Dto/paymentInput.dto';
 import { PaymentService } from './payment.service';
 
@@ -28,6 +32,46 @@ import { PaymentService } from './payment.service';
 @Controller('payment')
 export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
+
+  @Auth(Sys_Role.Admin, Sys_Role.User)
+  @Get('gateways')
+  @ApiOperation({ summary: 'Get available payment gateways' })
+  @ApiResponse({ status: 200, description: 'Available payment gateways' })
+  getPaymentGateways() {
+    return this.paymentService.getPaymentGateway();
+  }
+  @Auth(Sys_Role.Admin, Sys_Role.User)
+  @Get()
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Get my payments' })
+  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
+  @ApiResponse({ status: 200, description: 'Payments fetched successfully' })
+  async getMyPayments(
+    @AuthUser() user: IUser,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return await this.paymentService.getMyPayments(user, page, limit);
+  }
+
+  @Auth(Sys_Role.Admin, Sys_Role.User)
+  @Get(':paymentId')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Get payment details by ID' })
+  @ApiParam({ name: 'paymentId', type: Number })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment details fetched successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Payment not found' })
+  async getPaymentDetails(
+    @AuthUser() user: IUser,
+    @Param('paymentId', ParseIntPipe) paymentId: number,
+  ) {
+    return await this.paymentService.getPaymentDetails(user, paymentId);
+  }
+
   @Auth(Sys_Role.Admin, Sys_Role.User)
   @Post(':bookingId/pay')
   @HttpCode(200)
@@ -63,8 +107,31 @@ export class PaymentController {
   ) {
     return await this.paymentService.pay(user, bookingId, data);
   }
+
+  @Auth(Sys_Role.Admin)
+  @Post(':bookingId/refund')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Refund a confirmed booking payment' })
+  @ApiParam({ name: 'bookingId', type: Number })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { amount: { type: 'number', example: 1500 } },
+      required: ['amount'],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Payment refunded successfully' })
+  @ApiResponse({ status: 404, description: 'Booking not found' })
+  async refund(
+    @Param('bookingId', ParseIntPipe) bookingId: number,
+    @Body('amount') amount: number,
+  ) {
+    return await this.paymentService.refund(bookingId, amount);
+  }
   @Post('stripe')
   async stripeWebhook(@Req() req: RawBodyRequest<Request>) {
     return await this.paymentService.webhook(req);
   }
+
+
 }

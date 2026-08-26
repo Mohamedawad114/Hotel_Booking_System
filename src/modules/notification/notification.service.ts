@@ -1,12 +1,11 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { NotificationRepository } from 'src/common/repositories/mongoose';
 import { IUser } from 'src/common/interfaces';
-import { decoderCursor, encodedCursor } from 'src/common';
-import { INotification } from 'src/common/interfaces/notification.interface';
+import { decoderCursor, encodedCursor, notificationContent } from 'src/common';
+import { NotificationTitle } from 'src/common/enums';
 
 @Injectable()
 export class NotificationService {
@@ -37,5 +36,17 @@ export class NotificationService {
       { isRead: true },
     );
     return { message: 'notifications', data: notifications, meta: nextCursor };
+  }
+  async createNotification(
+    userId: number,
+    title: NotificationTitle,
+    bookingNumber: string,
+    totalPrice: number,
+  ) {
+    return await this.notificationRepo.create({
+      userId,
+      title,
+      content: notificationContent[title](bookingNumber, totalPrice),
+    });
   }
 }

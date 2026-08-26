@@ -8,3 +8,5 @@ export * from './review/review.module';
 export * from './room/room.module';
 export * from './notification/notification.module';
 export * from './payment/payment.module';
+export * from './gateway/gateway.module';
+export * from './dashboard/dashboard.module';

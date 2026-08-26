@@ -1,4 +1,4 @@
-import { NotificationTitle } from "src/common/enums/notification.enum";
+import { NotificationTitle } from 'src/common/enums/notification.enum';
 
 export const notificationContent = {
   [NotificationTitle.createdBooking]: (
@@ -7,8 +7,10 @@ export const notificationContent = {
   ) =>
     `Your booking #${bookingNumber} has been created successfully. Total price: ${totalPrice}  .`,
 
-  [NotificationTitle.canceledBooking]: (bookingNumber: string) =>
-    `Your booking #${bookingNumber} has been canceled. `,
+  [NotificationTitle.canceledBooking]: (
+    bookingNumber: string,
+    totalPrice?: number,
+  ) => `Your booking #${bookingNumber} has been canceled. `,
 
   [NotificationTitle.confirmedBooking]: (
     bookingNumber: string,

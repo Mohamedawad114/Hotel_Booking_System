@@ -5,7 +5,8 @@ import { BookingStatus } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { BookingService } from 'src/modules/booking/booking.service';
 import { EmailProducer } from '../email/email.producer';
-import { emailType } from 'src/common/enums';
+import { emailType, NotificationTitle } from 'src/common/enums';
+import { NotificationService } from 'src/modules/notification/notification.service';
 
 @Processor('booking')
 export class BookingJobProcessor extends WorkerHost {
@@ -14,6 +15,7 @@ export class BookingJobProcessor extends WorkerHost {
     private readonly bookingRepo: BookingRepository,
     private readonly logger: PinoLogger,
     private readonly emailQueue: EmailProducer,
+    private readonly notificationService: NotificationService,
   ) {
     super();
   }
@@ -35,12 +37,18 @@ export class BookingJobProcessor extends WorkerHost {
       return;
     }
     const paymentId = booking.payment?.id;
-
     await this.bookingService.cancelBooking(
       user.id,
       booking.providerReference,
       paymentId,
     );
+    await this.notificationService.createNotification(
+      user.id,
+      NotificationTitle.canceledBooking,
+      booking.bookingNumber,
+      booking.totalPrice,
+    );
+
     await this.emailQueue.sendEmailJob(emailType.canceledBooking, user.email, {
       bookingNumber: booking.bookingNumber,
       hotelName: hotelName,

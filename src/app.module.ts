@@ -25,6 +25,8 @@ import {
   RoomModule,
   NotificationModule,
   PaymentModule,
+  GatewayModule,
+  DashboardModule,
 } from './modules';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullBoardModule } from '@bull-board/nestjs';
@@ -83,6 +85,8 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     BookingModule,
     NotificationModule,
     PaymentModule,
+    GatewayModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [
@@ -115,6 +119,5 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 })
 export class AppModule {}
 
-
-///add webhook queue 
+///add webhook queue
 //test
