@@ -11,9 +11,8 @@ export class Notification implements INotification {
   content!: string;
   @Prop({ type: Number, required: true, min: 1 })
   userId!: number;
-    @Prop({ type: Boolean, default:false })
-
-  isRead!:boolean
+  @Prop({ type: Boolean, default: false })
+  isRead!: boolean;
 }
 const notificationSchema = SchemaFactory.createForClass(Notification);
 export type notificationDocument = HydratedDocument<Notification>;

@@ -5,5 +5,6 @@ import { Gateway } from './gateway';
 @Module({
   imports: [NotificationModule],
   providers: [Gateway],
+  exports: [Gateway],
 })
 export class GatewayModule {}

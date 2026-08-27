@@ -17,4 +17,17 @@ export const notificationContent = {
     totalPrice: number,
   ) =>
     `Your booking #${bookingNumber} has been confirmed successfully. Total price: ${totalPrice} .`,
+
+  [NotificationTitle.createdBookingAdmin]: (
+    bookingNumber: string,
+    totalPrice: number,
+    userEmail?: string,
+  ) =>
+    `user:${userEmail} created booking #${bookingNumber} successfully. Total price: ${totalPrice} .`,
+  [NotificationTitle.confirmedBookingAdmin]: (
+    bookingNumber: string,
+    totalPrice: number,
+    userEmail?: string,
+  ) =>
+    `user:${userEmail} payment for booking #${bookingNumber}  successfully. Total price: ${totalPrice} .`,
 };

@@ -1,0 +1,329 @@
+# File Tree: hotel_booking_system
+
+**Generated:** 8/28/2026, 12:50:01 AM
+
+```
+├── 📁 config
+│   ├── ⚙️ example.env
+│   └── 📄 swagger.config.ts
+├── 📁 prisma
+│   ├── 📁 migrations
+│   │   ├── 📁 20260629194807_add_to_user_schema
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260705121356_add_destination_model
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260706120038_update_destinations_model
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260710215332_add_hotel_model
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260715194329_add_rooms
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260715212916_update_hotel
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260719120032_add_facilities
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260721162122_update_schema
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260722221425_fix
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260723101427_some_updates
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260723110122_fixing
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260723142027_updated
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260727205607_update_rooms
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260801182956_updating_schema
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260807171856_updates_booking
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260808212943_update_booking_room_model
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260810212019_update_booking_m_odel
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260812223818_new_fixed
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260815130748_y
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260815134350_small_update
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260815171515_adding_created_at
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260820212215_update_at
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260820222357_adding_payment_type
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260821144558_upateing
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260821211312_adding_user_photo
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260821221454_adding_booking_currency
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260822151933_adding_currency
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260822222223_adding_g_ateway
+│   │   │   └── 📄 migration.sql
+│   │   ├── 📁 20260826112013_modify_user_model
+│   │   │   └── 📄 migration.sql
+│   │   └── ⚙️ migration_lock.toml
+│   └── 📄 schema.prisma
+├── 📁 src
+│   ├── 📁 common
+│   │   ├── 📁 DB
+│   │   │   ├── 📄 index.ts
+│   │   │   └── 📄 notification.model.ts
+│   │   ├── 📁 Utils
+│   │   │   ├── 📁 Hashing
+│   │   │   │   └── 📄 hash.service.ts
+│   │   │   ├── 📁 crypto
+│   │   │   │   └── 📄 crypto.service.ts
+│   │   │   ├── 📁 helpers
+│   │   │   │   ├── 📄 cursor.helper.ts
+│   │   │   │   ├── 📄 index.ts
+│   │   │   │   ├── 📄 notification.helper.ts
+│   │   │   │   └── 📄 qualifyAge.helper.ts
+│   │   │   ├── 📁 services
+│   │   │   │   ├── 📁 Jobs
+│   │   │   │   │   ├── 📁 booking
+│   │   │   │   │   │   ├── 📄 bookingJob.module.ts
+│   │   │   │   │   │   ├── 📄 bookingJob.processor.ts
+│   │   │   │   │   │   └── 📄 bookingJob.producer.ts
+│   │   │   │   │   ├── 📁 email
+│   │   │   │   │   │   ├── 📄 email.module.ts
+│   │   │   │   │   │   ├── 📄 email.processor.ts
+│   │   │   │   │   │   ├── 📄 email.producer.ts
+│   │   │   │   │   │   └── 📄 mail.service.ts
+│   │   │   │   │   └── 📁 webhook
+│   │   │   │   │       ├── 📄 webhook.job.module.ts
+│   │   │   │   │       ├── 📄 webhook.job.processor.ts
+│   │   │   │   │       └── 📄 webhook.job.producer.ts
+│   │   │   │   ├── 📁 Tokens
+│   │   │   │   │   ├── 📄 token.module.ts
+│   │   │   │   │   └── 📄 token.service.ts
+│   │   │   │   ├── 📁 hotel provider
+│   │   │   │   │   ├── 📄 provider.module.ts
+│   │   │   │   │   └── 📄 provider.service.ts
+│   │   │   │   ├── 📁 redis
+│   │   │   │   │   ├── 📄 index.ts
+│   │   │   │   │   ├── 📄 keys.ts
+│   │   │   │   │   └── 📄 redis.ts
+│   │   │   │   ├── 📁 stripe
+│   │   │   │   │   └── 📄 stripe.service.ts
+│   │   │   │   ├── 📄 2FA.service.ts
+│   │   │   │   ├── 📄 cloudinary.service.ts
+│   │   │   │   └── 📄 index.ts
+│   │   │   └── 📄 index.ts
+│   │   ├── 📁 decorator
+│   │   │   ├── 📄 Auth.decorator.ts
+│   │   │   ├── 📄 custom.decorator.ts
+│   │   │   ├── 📄 index.ts
+│   │   │   ├── 📄 param.decorator.ts
+│   │   │   └── 📄 validator.decorator.ts
+│   │   ├── 📁 enums
+│   │   │   ├── 📄 booking.enum.ts
+│   │   │   ├── 📄 emails.enum.ts
+│   │   │   ├── 📄 index.ts
+│   │   │   ├── 📄 notification.enum.ts
+│   │   │   ├── 📄 order.enum.ts
+│   │   │   ├── 📄 paymentGateway.enums.ts
+│   │   │   └── 📄 user.enum.ts
+│   │   ├── 📁 guards
+│   │   │   ├── 📄 authentication.guard.ts
+│   │   │   ├── 📄 authorization.guard.ts
+│   │   │   ├── 📄 globalFilter.guard.ts
+│   │   │   └── 📄 index.ts
+│   │   ├── 📁 interceptors
+│   │   │   ├── 📄 index.ts
+│   │   │   ├── 📄 logging.interceptor.ts
+│   │   │   ├── 📄 response.interceptor.ts
+│   │   │   └── 📄 timeout.interceptor.ts
+│   │   ├── 📁 interfaces
+│   │   │   ├── 📄 booking.interface.ts
+│   │   │   ├── 📄 cursorDecoded.interface.ts
+│   │   │   ├── 📄 destination.interface.ts
+│   │   │   ├── 📄 email.interface.ts
+│   │   │   ├── 📄 facility.interface.ts
+│   │   │   ├── 📄 favorite.interface.ts
+│   │   │   ├── 📄 hotel.interface.ts
+│   │   │   ├── 📄 index.ts
+│   │   │   ├── 📄 notification.interface.ts
+│   │   │   ├── 📄 provider.interface.ts
+│   │   │   ├── 📄 review.interface.ts
+│   │   │   ├── 📄 room.interface.ts
+│   │   │   ├── 📄 roomSelect.interface.ts
+│   │   │   ├── 📄 token.interface.ts
+│   │   │   └── 📄 user.interface.ts
+│   │   ├── 📁 prisma
+│   │   │   ├── 📄 prisma.module.ts
+│   │   │   └── 📄 prisma.service.ts
+│   │   ├── 📁 repositories
+│   │   │   ├── 📁 mongoose
+│   │   │   │   ├── 📄 base.repository.ts
+│   │   │   │   ├── 📄 index.ts
+│   │   │   │   └── 📄 notification.repository.ts
+│   │   │   └── 📁 prisma repositories
+│   │   │       ├── 📄 base.repository.ts
+│   │   │       ├── 📄 booking.repository.ts
+│   │   │       ├── 📄 destination.repository.ts
+│   │   │       ├── 📄 facility.repository.ts
+│   │   │       ├── 📄 favorite.repository.ts
+│   │   │       ├── 📄 hotel.repository.ts
+│   │   │       ├── 📄 index.ts
+│   │   │       ├── 📄 payment.repository.ts
+│   │   │       ├── 📄 review.repository.ts
+│   │   │       ├── 📄 room.repository.ts
+│   │   │       └── 📄 user.repository.ts
+│   │   ├── 📄 common.module.ts
+│   │   └── 📄 index.ts
+│   ├── 📁 modules
+│   │   ├── 📁 auth
+│   │   │   ├── 📁 Dto
+│   │   │   │   ├── 📄 TwoFA.dto.ts
+│   │   │   │   ├── 📄 confirmEmail.dto.ts
+│   │   │   │   ├── 📄 index.ts
+│   │   │   │   ├── 📄 login.dto.ts
+│   │   │   │   └── 📄 signup.dto.ts
+│   │   │   ├── 📁 entities
+│   │   │   │   ├── 📄 user.entity.ts
+│   │   │   │   └── 📄 user.mapper.ts
+│   │   │   ├── 📄 auth.controller.ts
+│   │   │   ├── 📄 auth.module.ts
+│   │   │   └── 📄 auth.service.ts
+│   │   ├── 📁 booking
+│   │   │   ├── 📁 commands
+│   │   │   │   ├── 📁 handlers
+│   │   │   │   │   ├── 📄 booking.handler.ts
+│   │   │   │   │   ├── 📄 cancelBooking.handler.ts
+│   │   │   │   │   ├── 📄 searchAvailability.handler.ts
+│   │   │   │   │   └── 📄 selectRooms.handler.ts
+│   │   │   │   ├── 📄 booking.command.ts
+│   │   │   │   ├── 📄 cancelBooking.command.ts
+│   │   │   │   ├── 📄 searchAvailability.command.ts
+│   │   │   │   └── 📄 selectRooms.command.ts
+│   │   │   ├── 📁 dto
+│   │   │   │   ├── 📄 booking.dto.ts
+│   │   │   │   └── 📄 checkAvailability.dto.ts
+│   │   │   ├── 📁 events
+│   │   │   │   ├── 📁 handler
+│   │   │   │   │   ├── 📄 cancelBooking.event.handler.ts
+│   │   │   │   │   └── 📄 confirmBooking.event.handler.ts
+│   │   │   │   ├── 📄 cancelBooking.event.ts
+│   │   │   │   └── 📄 confirmBooking.event.ts
+│   │   │   ├── 📁 queries
+│   │   │   │   ├── 📁 handlers
+│   │   │   │   │   ├── 📄 getBookingDetail.handler.ts
+│   │   │   │   │   └── 📄 getBookings.handler.ts
+│   │   │   │   ├── 📄 getBooking.query.ts
+│   │   │   │   └── 📄 getBookings.query.ts
+│   │   │   ├── 📁 types
+│   │   │   │   ├── 📄 booking.type.ts
+│   │   │   │   └── 📄 bookingDetails.type.ts
+│   │   │   ├── 📄 booking.controller.ts
+│   │   │   ├── 📄 booking.module.ts
+│   │   │   ├── 📄 booking.resolver.ts
+│   │   │   └── 📄 booking.service.ts
+│   │   ├── 📁 dashboard
+│   │   │   ├── 📁 Dto
+│   │   │   │   └── 📄 getBookings.dto.ts
+│   │   │   ├── 📄 dashboard-booking.service.ts
+│   │   │   ├── 📄 dashboard-payment.service.ts
+│   │   │   ├── 📄 dashboard-user.service.ts
+│   │   │   ├── 📄 dashboard.controller.ts
+│   │   │   └── 📄 dashboard.module.ts
+│   │   ├── 📁 destination
+│   │   │   ├── 📁 Dto
+│   │   │   │   └── 📄 destination.dto.ts
+│   │   │   ├── 📄 destination.controller.ts
+│   │   │   ├── 📄 destination.module.ts
+│   │   │   ├── 📄 destination.service.ts
+│   │   │   └── 📄 destination.tasks.ts
+│   │   ├── 📁 facility
+│   │   │   ├── 📁 dto
+│   │   │   │   └── 📄 addFacility.dto.ts
+│   │   │   ├── 📄 facility.controller.ts
+│   │   │   ├── 📄 facility.module.ts
+│   │   │   ├── 📄 facility.service.ts
+│   │   │   └── 📄 facility.task.ts
+│   │   ├── 📁 favorite
+│   │   │   ├── 📄 favorite.controller.ts
+│   │   │   ├── 📄 favorite.module.ts
+│   │   │   └── 📄 favorite.service.ts
+│   │   ├── 📁 gateway
+│   │   │   ├── 📄 gateway.module.ts
+│   │   │   └── 📄 gateway.ts
+│   │   ├── 📁 hotel
+│   │   │   ├── 📁 Dto
+│   │   │   │   └── 📄 search.dto.ts
+│   │   │   ├── 📁 types
+│   │   │   │   └── 📄 getAllHotels.type.ts
+│   │   │   ├── 📄 hotel.controller.ts
+│   │   │   ├── 📄 hotel.module.ts
+│   │   │   ├── 📄 hotel.resolver.ts
+│   │   │   ├── 📄 hotel.service.ts
+│   │   │   ├── 📄 hotel.tasks.ts
+│   │   │   └── 📄 hotelPhones.loader.ts
+│   │   ├── 📁 notification
+│   │   │   ├── 📄 notification.controller.ts
+│   │   │   ├── 📄 notification.module.ts
+│   │   │   └── 📄 notification.service.ts
+│   │   ├── 📁 payment
+│   │   │   ├── 📁 Dto
+│   │   │   │   ├── 📄 paymentInput.dto.ts
+│   │   │   │   └── 📄 stripeInput.dto.ts
+│   │   │   ├── 📄 payment.factory.ts
+│   │   │   ├── 📄 payment.module.ts
+│   │   │   ├── 📄 payment.service.ts
+│   │   │   └── 📄 paymnet.controller.ts
+│   │   ├── 📁 profile
+│   │   │   ├── 📁 Dto
+│   │   │   │   ├── 📄 UpdatePassword.dto.ts
+│   │   │   │   ├── 📄 index.ts
+│   │   │   │   ├── 📄 resetPassword.dto.ts
+│   │   │   │   └── 📄 updateProfile.dto.ts
+│   │   │   ├── 📁 entities
+│   │   │   │   ├── 📄 userProfile.entity.ts
+│   │   │   │   └── 📄 userProfile.mapper.ts
+│   │   │   ├── 📄 profile.controller.ts
+│   │   │   ├── 📄 profile.module.ts
+│   │   │   └── 📄 profile.service.ts
+│   │   ├── 📁 review
+│   │   │   ├── 📁 Dto
+│   │   │   │   └── 📄 addReview.dto.ts
+│   │   │   ├── 📄 review.controller.ts
+│   │   │   ├── 📄 review.module.ts
+│   │   │   └── 📄 review.service.ts
+│   │   ├── 📁 room
+│   │   │   ├── 📁 Dto
+│   │   │   │   └── 📄 searchRooms.dto.ts
+│   │   │   ├── 📄 room.controller.ts
+│   │   │   ├── 📄 room.module.ts
+│   │   │   └── 📄 room.service.ts
+│   │   └── 📄 index.ts
+│   ├── 📄 app.controller.spec.ts
+│   ├── 📄 app.controller.ts
+│   ├── 📄 app.module.ts
+│   ├── 📄 app.service.ts
+│   ├── 📄 main.ts
+│   └── 📄 schema.gql
+├── 📁 test
+│   ├── 📄 app.e2e-spec.ts
+│   └── ⚙️ jest-e2e.json
+├── ⚙️ .dockerignore
+├── ⚙️ .gitignore
+├── ⚙️ .prettierrc
+├── 🐳 Dockerfile
+├── 📝 README.md
+├── ⚙️ docker-compose-dev.yml
+├── 📄 eslint.config.mjs
+├── 📄 hotel_booking.drawio
+├── ⚙️ nest-cli.json
+├── ⚙️ package-lock.json
+├── ⚙️ package.json
+├── 📄 project-structure.txt
+└── ⚙️ tsconfig.json
+```
+
+---
+
+_Generated by FileTree Pro Extension_

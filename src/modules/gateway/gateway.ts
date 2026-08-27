@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { PinoLogger } from 'nestjs-pino';
 import {
+  notificationContent,
   redis,
   redisKeys,
   redisSub,
@@ -55,7 +56,10 @@ export class Gateway
     const decoded = this.tokenService.VerifyAccessToken(auth);
     const user = await this.userRepo.findById(decoded.id);
     client.data.user = user;
-    if (user.role === Sys_Role.Admin) client.join('admins');
+    if (user.role === Sys_Role.Admin) {
+      client.join('admins');
+      await redis.sadd(redisKeys.admins(), user.id);
+    }
     await redis.sadd(redisKeys.socketKey(user.id), client.id);
     this.logger.info(`Client connected: ${client.id}`);
   }
@@ -89,8 +93,29 @@ export class Gateway
       });
     }
   }
+
+  async sendNotificationAdmin(
+    bookingNumber: string,
+    totalPrice: number,
+    title: NotificationTitle,
+    userEmail: string,
+  ) {
+    const admins = await redis.smembers(redisKeys.admins());
+    const ids = admins.map((id) => Number(id));
+    await this.notificationService.createNotificationAdmins(
+      ids,
+      title,
+      bookingNumber,
+      totalPrice,
+      userEmail,
+    );
+    this.server.to('admins').emit('notification', {
+      title: title,
+      content: notificationContent[title](bookingNumber, totalPrice, userEmail),
+    });
+  }
   async onModuleInit() {
-    const subscriber = redisSub.duplicate();
+    const subscriber = redisSub.duplicate()
     await subscriber.subscribe('bookingConfirmed');
     subscriber.on('message', async (channel, message) => {
       if (channel !== 'bookingConfirmed') return;
@@ -99,6 +124,12 @@ export class Gateway
         data.userId,
         data.bookingNumber,
         data.totalPrice,
+      );
+      await this.sendNotificationAdmin(
+        data.bookingNumber,
+        data.totalPrice,
+        NotificationTitle.confirmedBookingAdmin,
+        data.to,
       );
     });
   }

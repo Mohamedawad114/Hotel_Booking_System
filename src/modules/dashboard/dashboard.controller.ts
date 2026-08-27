@@ -19,6 +19,7 @@ import { Sys_Role } from 'src/common/enums';
 import { DashboardUserService } from './dashboard-user.service';
 import { DashboardBookingService } from './dashboard-booking.service';
 import { GetBookingsDto } from './Dto/getBookings.dto';
+import { DashboardPaymentService } from './dashboard-payment.service';
 
 @ApiTags('dashboard/users')
 @ApiBearerAuth('access-token')
@@ -28,7 +29,26 @@ export class DashboardController {
   constructor(
     private readonly dashboardUserService: DashboardUserService,
     private readonly dashboardBookingService: DashboardBookingService,
+    private readonly dashboardPaymentService: DashboardPaymentService,
   ) {}
+
+  @Get('payments/summary')
+  @ApiOperation({ summary: 'Get payment income and daily booking summary' })
+  getPaymentSummary() {
+    return this.dashboardPaymentService.getSummary();
+  }
+
+  @Get('payments')
+  @ApiOperation({ summary: 'Get all payments' })
+  getAllPayments(@Query() data: GetBookingsDto) {
+    return this.dashboardPaymentService.getAllPayments(data);
+  }
+
+  @Get('payments/:id')
+  @ApiOperation({ summary: 'Get payment details with user information' })
+  getPaymentDetails(@Param('id', ParseIntPipe) id: number) {
+    return this.dashboardPaymentService.getPaymentDetails(id);
+  }
 
   @Get('bookings')
   @ApiOperation({

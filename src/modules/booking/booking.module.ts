@@ -12,6 +12,7 @@ import { SearchAvailabilityHandler } from './commands/handlers/searchAvailabilit
 import { BookingHandler } from './commands/handlers/booking.handler';
 import { PaymentModule } from '../payment/payment.module';
 import { NotificationModule } from '../notification/notification.module';
+import { GatewayModule } from '../gateway/gateway.module';
 @Module({
   imports: [
     CqrsModule,
@@ -19,6 +20,7 @@ import { NotificationModule } from '../notification/notification.module';
     EmailModule,
     NotificationModule,
     PaymentModule,
+    GatewayModule,
   ],
   controllers: [BookingController],
   providers: [

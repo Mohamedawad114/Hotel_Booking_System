@@ -13,6 +13,7 @@ import {
 } from 'src/common';
 import { emailType, NotificationTitle } from 'src/common/enums';
 import { NotificationService } from 'src/modules/notification/notification.service';
+import { Gateway } from 'src/modules/gateway/gateway';
 
 @Injectable()
 @EventsHandler(ConfirmBookingEvent)
@@ -21,6 +22,7 @@ export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent>
     private readonly bookingQueue: BookingJobProducer,
     private readonly notificationService: NotificationService,
     private readonly emailQueue: EmailProducer,
+    private readonly GatewayService: Gateway,
     private readonly hotelRepo: HotelRepository,
   ) {}
   async handle(Event: ConfirmBookingEvent) {
@@ -33,6 +35,12 @@ export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent>
       redisKeys.hotelName(booking.id),
       TTL.hotelName,
       hotel.name,
+    );
+    await this.GatewayService.sendNotificationAdmin(
+      booking.bookingNumber,
+      booking.totalPrice,
+      NotificationTitle.createdBookingAdmin,
+      user.email,
     );
     await this.bookingQueue.addBookingJob(user, hotel.name, booking.id);
     await this.notificationService.createNotification(
@@ -47,5 +55,13 @@ export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent>
       ...booking,
       hotelName: hotel.name,
     });
+    await redis.del(
+      redisKeys.dashboardBookings({
+        day: '*',
+        limit: '*',
+        cursor: '*',
+        month: '*',
+      }),
+    );
   }
 }

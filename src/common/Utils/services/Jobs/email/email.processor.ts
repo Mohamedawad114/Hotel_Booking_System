@@ -63,7 +63,6 @@ export class EmailWorker extends WorkerHost {
         this.logger.warn(`Unknown job type: ${job.name}`);
         throw new Error('Unknown job type');
     }
-
     try {
       const n8nResponse = await firstValueFrom(
         this.httpService.post(this.config.getOrThrow<string>('N8N_URL'), {
@@ -72,13 +71,15 @@ export class EmailWorker extends WorkerHost {
           emailSubject,
         }),
       );
-      if (emailSubject === emailType.confirmedBooking) {
+      if (emailSubject === emailType.confirmedBooking)
         await redisPub.publish(
           'bookingConfirmed',
-          data.bookingNumber,
-          data.totalPrice,
+          JSON.stringify({
+            bookingNumber: data.bookingNumber,
+            totalPrice: data.totalPrice,
+            to,
+          }),
         );
-      }
       this.logger.info(`email have send successfully :${n8nResponse.data}`);
     } catch (err) {
       this.logger.error(`err :${err}`);

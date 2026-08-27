@@ -1,7 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { NotificationRepository } from 'src/common/repositories/mongoose';
 import { IUser } from 'src/common/interfaces';
 import { decoderCursor, encodedCursor, notificationContent } from 'src/common';
@@ -48,5 +45,26 @@ export class NotificationService {
       title,
       content: notificationContent[title](bookingNumber, totalPrice),
     });
+  }
+  async createNotificationAdmins(
+    userIds: number[],
+    title: NotificationTitle,
+    bookingNumber: string,
+    totalPrice: number,
+    userEmail: string,
+  ) {
+    return await Promise.all(
+      userIds.map((userId) =>
+        this.notificationRepo.create({
+          userId,
+          title,
+          content: notificationContent[title](
+            bookingNumber,
+            totalPrice,
+            userEmail,
+          ),
+        }),
+      ),
+    );
   }
 }

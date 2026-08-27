@@ -1,9 +1,11 @@
 import { SearchAvailabilityDto } from 'src/modules/booking/dto/checkAvailability.dto';
+import { GetBookingsDto } from 'src/modules/dashboard/Dto/getBookings.dto';
 import { SearchArgs } from 'src/modules/hotel/Dto/search.dto';
 
 export const redisKeys = {
   refreshToken: (userId: number, jti?: string) =>
     `refreshToken_${userId}:${jti}`,
+  admins: () => `admins socket`,
   OTP: (email: string) => `otp_${email}`,
   resetPassword: (email: string) => `otp_reset:${email}`,
   token_blackList: (accessToken: string) => `tokens_blacklist:${accessToken}`,
@@ -13,7 +15,7 @@ export const redisKeys = {
   socketKey: (userId: number) => `user_sockets:${userId}`,
   destination: () => `destinations`,
   facility: () => `facilities`,
-  getHotels: (query?: SearchArgs, sortField?: string,cursor?:string) =>
+  getHotels: (query?: SearchArgs, sortField?: string, cursor?: string) =>
     `hotel:${query?.countryCode ?? 'all'}:destinationCode=${query?.destinationCode}:sortBy=${sortField ?? 'createdAt'}:${query?.rating ?? query?.ranking ?? 'desc'}:cursor=${cursor ?? 'start'}:limit=${query?.limit ?? 20}`,
   hotelDetail: (hotelId: number) => `hotel_${hotelId}`,
   hotelRooms: (hotelId: number, cursor?: string, limit?: number) =>
@@ -26,7 +28,10 @@ export const redisKeys = {
     `selection:${hotelCode}:${userId}`,
   userLock: (userId: number) => `userLocked:${userId}`,
   hotelName: (bookingId: number) => ` bookingId:${bookingId}=>hotelName`,
-  // chatHistory: (conversationId: string) => `chatMessages:${conversationId}`,
+  dashboardBookings: (data: GetBookingsDto) =>
+    `booking_data-for:admins=>${data.month}:${data.day}:${data.cursor}:${data.limit}`,
+  dashboardPayments: (data: GetBookingsDto) =>
+    `payments_data-for:admins=>${data.month}:${data.day}:${data.cursor}:${data.limit}`,
 };
 
 export const TTL = {
@@ -46,4 +51,5 @@ export const TTL = {
   idempotencyKey: 60 * 5,
   selectionRooms: 60 * 10,
   hotelName: 60 * 15,
+  dashboard: 60 * 5,
 };

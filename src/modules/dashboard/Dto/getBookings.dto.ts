@@ -8,7 +8,7 @@ export class GetBookingsDto {
   @Max(100)
   @Min(1)
   @IsOptional()
-  limit?: number;
+  limit?: number | string;
   @IsString()
   @IsOptional()
   day?: string;

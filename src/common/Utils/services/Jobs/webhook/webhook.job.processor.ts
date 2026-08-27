@@ -7,7 +7,7 @@ import {
   UserRepository,
 } from 'src/common/repositories/prisma repositories';
 import { emailType } from 'src/common/enums';
-import { redis, redisKeys } from '../../redis';
+import { redis, redisKeys, redisPub } from '../../redis';
 
 @Processor({ name: 'webhookQueue' })
 export class WebhookProcessor extends WorkerHost {
@@ -43,6 +43,14 @@ export class WebhookProcessor extends WorkerHost {
       hotelName: hotelName!,
       bookingNumber: booking.bookingNumber,
     });
+    await redis.del(
+      redisKeys.dashboardPayments({
+        limit: '*',
+        cursor: '*',
+        month: '*',
+        day: '*',
+      }),
+    );
   }
   @OnWorkerEvent('completed')
   handleCompleted(job: Job) {
