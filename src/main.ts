@@ -17,7 +17,8 @@ async function bootstrap() {
   });
   app.use(helmet(), hpp(), cookieParser());
   app.enableCors({
-    origin: '*',
+    origin: 'http://localhost:5173',
+    credentials: true,
   });
   app.setGlobalPrefix('api');
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);

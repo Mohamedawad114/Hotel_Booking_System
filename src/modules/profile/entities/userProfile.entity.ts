@@ -16,7 +16,10 @@ export class userProfileEntity {
   role!: Sys_Role;
   @IsString()
   @Expose()
-  photo!: string;
+  photoUrl!: string;
+  @IsString()
+  @Expose()
+  photoId!: string;
   @IsString()
   @Expose()
   city!: string;

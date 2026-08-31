@@ -37,22 +37,22 @@ export class Review_Controller {
   }
 
   @HttpCode(200)
-  @Get('hotel/:id')
+  @Get('/all/:hotelId')
   @ApiOperation({ summary: 'Get reviews for a product with pagination' })
   @ApiResponse({ status: 200, description: 'Return list of reviews' })
   getProductReviews(
-    @Param('id') hotelId: number,
+    @Param('hotelId') hotelId: number,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ) {
     return this.reviewServices.getHotelReviews(hotelId, page, limit);
   }
 
-  @Post('/:id/add-review')
+  @Post('/:hotelId')
   @ApiOperation({ summary: 'Add a review to a product' })
   @ApiResponse({ status: 201, description: 'Review added successfully' })
   addReview(
-    @Param('id') hotelId: number,
+    @Param('hotelId') hotelId: number,
     @AuthUser() user: IUser,
     @Body() Dto: addReviewDto,
   ) {

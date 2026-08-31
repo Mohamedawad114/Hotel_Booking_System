@@ -69,10 +69,13 @@ export class RoomServices {
       },
     );
     if (!room) throw new NotFoundException('room not found');
-    const facilities = await this.roomFacilityRepo.findMany({
-      roomCode: room.code,
-      hotelId:room.hotelId
-    });
+    const facilities = await this.roomFacilityRepo.findMany(
+      {
+        roomCode: room.code,
+        hotelId: room.hotelId,
+      },
+      { select: { id: true, facility: { select: { name: true, id: true } } } },
+    );
     if (!facilities.length) return { message: 'no facilities for this room' };
     const res = {
       message: 'room facilities',

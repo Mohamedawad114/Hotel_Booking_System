@@ -35,7 +35,7 @@ export class DashboardPaymentService {
           ? { id: decodedCursor.id, createdAt: decodedCursor.value }
           : undefined,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
-        take: data.limit,
+        take: data.limit ||20,
         select: {
           id: true,
           amount: true,

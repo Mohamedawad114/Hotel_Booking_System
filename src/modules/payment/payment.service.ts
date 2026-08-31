@@ -18,6 +18,7 @@ import { PaymentGatewayFactory } from './payment.factory';
 import { PaymentInput } from './Dto/paymentInput.dto';
 import { Request } from 'express';
 import type { PaymentIntent } from 'stripe';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PaymentService {
@@ -28,6 +29,7 @@ export class PaymentService {
     private readonly paymentRepo: PaymentRepository,
     private readonly stripeService: StripeServices,
     private readonly webhookQueue: WebhookProducer,
+    private readonly configService: ConfigService,
   ) {}
 
   getPaymentGateway() {
@@ -51,6 +53,27 @@ export class PaymentService {
         { customer_id: customerId },
       );
       user.customer_id = customerId;
+    }
+    const existingPayment = await this.paymentRepo.findOne(
+      {
+        bookingId: booking.id,
+        status: { in: [paymentStatus.completed, paymentStatus.pending] },
+      },
+      { select: { id: true, paymentId: true } },
+    );
+    if (existingPayment) {
+      const paymentIntent = await this.stripeService.retrievePaymentIntent(
+        existingPayment.paymentId,
+      );
+      return {
+        message: 'Payment already initialized',
+        data: {
+          clientSecret: paymentIntent.client_secret,
+          id: existingPayment.paymentId,
+          bookingId,
+        },
+        meta: { gateway: existingPayment.gateway },
+      };
     }
     const paymentResult = await paymentGateway.pay({
       amount: booking.totalPrice,
@@ -113,6 +136,7 @@ export class PaymentService {
     );
     return refundResult;
   }
+
   async webhook(req: RawBodyRequest<Request>) {
     const event = await this.stripeService.webhook(req);
     const paymentObject = event.data.object as PaymentIntent;
@@ -129,7 +153,7 @@ export class PaymentService {
       await this.bookingRepo.updateOne(
         {
           id: Number(bookingId),
-          userId: metadata.userId,
+          userId: Number(metadata.userId),
           status: BookingStatus.PENDING,
         },
         {
@@ -149,7 +173,7 @@ export class PaymentService {
     } else if (event.type === 'payment_intent.payment_failed') {
       await this.paymentRepo.updateOne(
         {
-          id: paymentId,
+          paymentId: paymentId,
           bookingId: bookingId,
           status: paymentStatus.pending,
         },
@@ -161,7 +185,6 @@ export class PaymentService {
     }
     return { received: true };
   }
-
   getMyPayments = async (user: IUser, page: number, limit: number) => {
     const offset = (page - 1) * limit;
     const [payments, total] = await Promise.all([

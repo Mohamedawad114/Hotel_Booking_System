@@ -61,20 +61,26 @@ export class StripeServices {
       );
     }
   }
+  async retrievePaymentIntent(paymentIntentId: string) {
+    return await this.stripe.paymentIntents.retrieve(paymentIntentId);
+  }
   async webhook(req: RawBodyRequest<Request>) {
-    const signature = req.headers['stripe-signature'];
-    const payload = req.rawBody;
-    if (!signature || !payload) {
-      throw new BadRequestException('Missing stripe-signature or raw body');
-    }
     try {
-      const event: Stripe.Event = this.stripe.webhooks.constructEvent(
-        payload,
-        signature,
-        this.configService.getOrThrow<string>('WEBHOOK_SECRET'),
+      const signature = req.headers['stripe-signature'];
+      const payload = req.rawBody;
+      const secret = this.configService.getOrThrow<string>('WEBHOOK_SECRET');
+      if (!signature || !payload) {
+        throw new BadRequestException('Missing stripe-signature or raw body');
+      }
+      const event = this.stripe.webhooks.constructEvent(
+        payload!,
+        signature!,
+        secret,
       );
       return event;
     } catch (err: any) {
+      console.error('❌ STRIPE WEBHOOK ERROR:', err.message);
+      console.error(err);
       throw new BadRequestException(`Webhook Error: ${err.message}`);
     }
   }

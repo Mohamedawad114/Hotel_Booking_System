@@ -10,7 +10,7 @@ export class SearchAvailabilityHandler implements ICommandHandler<SearchAvailabi
     const { hotelCode, dto } = query;
     const cacheKey = redisKeys.availability(hotelCode, dto);
     const cached = await redis.get(cacheKey);
-    // if (cached) return JSON.parse(cached);
+    if (cached) return JSON.parse(cached);
     if (dto.checkIn < new Date())
       throw new BadRequestException(
         'check in must be greater than or equal now',

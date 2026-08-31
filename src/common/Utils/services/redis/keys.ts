@@ -15,8 +15,23 @@ export const redisKeys = {
   socketKey: (userId: number) => `user_sockets:${userId}`,
   destination: () => `destinations`,
   facility: () => `facilities`,
-  getHotels: (query?: SearchArgs, sortField?: string, cursor?: string) =>
-    `hotel:${query?.countryCode ?? 'all'}:destinationCode=${query?.destinationCode}:sortBy=${sortField ?? 'createdAt'}:${query?.rating ?? query?.ranking ?? 'desc'}:cursor=${cursor ?? 'start'}:limit=${query?.limit ?? 20}`,
+  getHotels: (query: SearchArgs = {}, sortedField: string = 'createdAt') => {
+    const cursor = query.cursor ?? 'start';
+    const normalizedFilters = {
+      country: query.countryCode ?? 'all',
+      dest: query.destinationCode ?? 'all',
+      city: query.city ?? 'all',
+      stars: query.stars ?? 'all',
+      name: query.hotelName ?? 'all',
+      rating: query.rating ?? 'all',
+      ranking: query.ranking ?? 'all',
+      limit: query.limit ?? 20,
+    };
+    const filterString = Object.entries(normalizedFilters)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(':');
+    return `hotels:${filterString}:sort=${sortedField}:cursor=${cursor}`;
+  },
   hotelDetail: (hotelId: number) => `hotel_${hotelId}`,
   hotelRooms: (hotelId: number, cursor?: string, limit?: number) =>
     `hotelRooms: ${hotelId}_cursor:${cursor}_limit:${limit}`,

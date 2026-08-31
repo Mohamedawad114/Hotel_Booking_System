@@ -35,8 +35,8 @@ export class WebhookProcessor extends WorkerHost {
     });
     const hotelName = await redis.get(redisKeys.hotelName(booking.id));
     await this.emailQueue.sendEmailJob(emailType.confirmedBooking, user.email, {
-      name: user.hotelName,
-      totalPrice: booking.totalprice,
+      name: user.name,
+      totalPrice: booking.totalPrice,
       checkIn: booking.checkIn,
       checkOut: booking.checkOut,
       paymentId: booking.payment.paymentId,

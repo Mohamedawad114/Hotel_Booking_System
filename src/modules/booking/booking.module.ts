@@ -13,6 +13,8 @@ import { BookingHandler } from './commands/handlers/booking.handler';
 import { PaymentModule } from '../payment/payment.module';
 import { NotificationModule } from '../notification/notification.module';
 import { GatewayModule } from '../gateway/gateway.module';
+import { CancelBookingHandler } from './commands/handlers/cancelBooking.handler';
+import { BookingService } from './booking.service';
 @Module({
   imports: [
     CqrsModule,
@@ -33,6 +35,8 @@ import { GatewayModule } from '../gateway/gateway.module';
     SelectRoomsHandler,
     HotelRepository,
     BookingResolver,
+    CancelBookingHandler,
+    BookingService
   ],
 })
 export class BookingModule {}

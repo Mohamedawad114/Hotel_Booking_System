@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import {
+  decoderCursor,
+  encodedCursor,
   FacilityRepository,
   HotelbedsProvider,
   redis,
@@ -9,6 +11,7 @@ import {
 } from 'src/common';
 import { AddFacility } from './dto/addFacility.dto';
 import { IFacility } from 'src/common/interfaces';
+import { QueryDto } from './dto/query.dto';
 
 @Injectable()
 export class FacilityService implements OnModuleInit {
@@ -17,24 +20,39 @@ export class FacilityService implements OnModuleInit {
     private readonly logger: PinoLogger,
     private readonly providerService: HotelbedsProvider,
   ) {}
-  getAllFacilities = async () => {
+  getAllFacilities = async (query: QueryDto) => {
     const cahchedFacilities = await redis.get(redisKeys.facility());
     if (cahchedFacilities) {
-      return {
-        message: 'facilities fetched from cache',
-        data: JSON.parse(cahchedFacilities),
-      };
+      return JSON.parse(cahchedFacilities);
     }
-    const facilities = await this.facilityRepo.findMany({}, {});
+    const decodedCursor = decoderCursor(query.cursor);
+    const facilities = await this.facilityRepo.findMany(
+      {},
+      {
+        skip: decodedCursor ? 1 : 0,
+        cursor: decodedCursor
+          ? { id: decodedCursor.id, createdAt: decodedCursor.value }
+          : undefined,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        take: query.limit || 20,
+      },
+    );
+    const lastItem = facilities[facilities.length - 1];
+    const nextCursor = encodedCursor({
+      id: lastItem.id,
+      value: lastItem.createdAt,
+    });
+    const res = {
+      message: 'all facilities fetched successfully',
+      data: facilities,
+      meta: { nextCursor },
+    };
     await redis.setex(
       redisKeys.facility(),
       TTL.facilities,
-      JSON.stringify(facilities),
+      JSON.stringify(res),
     );
-    return {
-      message: 'all facilities fetched successfully',
-      data: facilities,
-    };
+    return res;
   };
   updateFacilities = async (data: AddFacility[]) => {
     for (const facility of data) {

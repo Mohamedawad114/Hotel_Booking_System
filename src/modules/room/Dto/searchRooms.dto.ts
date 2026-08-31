@@ -9,6 +9,7 @@ export class SearchRoomsDto {
   })
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   children?: number;
 
   @ApiPropertyOptional({
@@ -17,6 +18,7 @@ export class SearchRoomsDto {
   })
   @IsInt()
   @IsOptional()
+  @Type(() => Number)
   adults?: number;
 
   @ApiPropertyOptional({

@@ -33,21 +33,21 @@ export class Favorite_Controller {
     return this.favoriteServices.getFavorites(user);
   }
 
-  @Post('/:id/add-favorite')
+  @Post('/:hotelId')
   @ApiOperation({ summary: 'Add a hotel to favorites' })
   @ApiResponse({ status: 201, description: 'Favorite added successfully' })
   addFavorite(
-    @Param('id', ParseIntPipe) hotelId: number,
+    @Param('hotelId', ParseIntPipe) hotelId: number,
     @AuthUser() user: IUser,
   ) {
     return this.favoriteServices.addFavorite(hotelId, user);
   }
 
-  @Delete('/:id/remove-favorite')
+  @Delete('/:hotelId')
   @ApiOperation({ summary: 'Remove a hotel from favorites' })
   @ApiResponse({ status: 200, description: 'Favorite removed successfully' })
   removeFavorite(
-    @Param('id', ParseIntPipe) hotelId: number,
+    @Param('hotelId', ParseIntPipe) hotelId: number,
     @AuthUser() user: IUser,
   ) {
     return this.favoriteServices.removeFavorite(hotelId, user);

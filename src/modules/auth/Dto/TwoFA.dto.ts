@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsPositive, Length } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsNumber, IsPositive, IsString, Length } from 'class-validator';
 
 export class TwoFADto {
   @ApiProperty({ example: 25638, description: '2FA verification code' })
-  @IsNumber()
+  @IsString()
+  @Transform(({ value }) => value?.toString())
   @IsNotEmpty()
   @Length(6)
   code!: string;

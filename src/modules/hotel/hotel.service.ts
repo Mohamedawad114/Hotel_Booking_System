@@ -50,7 +50,8 @@ export class HotelServices implements OnModuleInit {
     const sortedField =
       cursorDecoded?.sortedField ??
       (query?.rating ? 'rating' : query?.ranking ? 'ranking' : 'createdAt');
-    const cached = await redis.get(redisKeys.getHotels(query, sortedField));
+    const cacheKey = redisKeys.getHotels(query, sortedField);
+    const cached = await redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
     if (query?.destinationCode) {
       const isExited = await this.destinationRepo.findOne(
@@ -73,12 +74,7 @@ export class HotelServices implements OnModuleInit {
       data: hotels,
       meta: { nextCursor: nextCursor },
     };
-    const nextQuery = { ...query, cursor: nextCursor };
-    await redis.setex(
-      redisKeys.getHotels(nextQuery, sortedField),
-      TTL.hotels,
-      JSON.stringify(res),
-    );
+    await redis.setex(cacheKey, TTL.hotels, JSON.stringify(res));
     return res;
   }
   async getHotelById(hotelId: number) {
@@ -108,9 +104,12 @@ export class HotelServices implements OnModuleInit {
       select: { id: true, code: true },
     });
     if (!hotel) throw new NotFoundException('hotel not found');
-    const facilities = await this.hotelFacilityRepo.findMany({
-      hotelId: hotel.id,
-    });
+    const facilities = await this.hotelFacilityRepo.findMany(
+      {
+        hotelId: hotel.id,
+      },
+      { select: { id: true, facility: { select: { name: true, id: true } } } },
+    );
     if (!facilities.length) return { message: 'no facilities for this hotel ' };
     const res = {
       message: 'hotel facilities',

@@ -87,7 +87,7 @@ export class AuthService {
   loginUser = async (Dto: LoginDto, res: Response) => {
     const { email, password } = Dto;
     const user = await this.userRepo.findByEmail(email, {
-      select: { id: true, isBanned: true, password: true, isTwoFA: true },
+      select: { id: true, isBanned: true, isConfirmed:true,password: true, isTwoFA: true },
     });
     if (!user) throw new NotFoundException(`email not found`);
     if (!user.isConfirmed) {

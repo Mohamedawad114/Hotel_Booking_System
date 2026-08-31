@@ -33,9 +33,18 @@ export class FavoriteServices {
     return { message: 'favorite created successfully', data: favorite };
   };
   getFavorites = async (user: IUser) => {
-    const favorites = await this.favoriteRepo.findMany({
-      userId: user.id,
-    });
+    const favorites = await this.favoriteRepo.findMany(
+      {
+        userId: user.id,
+      },
+      {
+        select: {
+          hotel: { select: { name: true } },
+          hotelId: true,
+          id: true,
+        },
+      },
+    );
     return { message: 'user favorites', data: favorites };
   };
   removeFavorite = async (hotelId: number, user: IUser) => {
@@ -44,7 +53,7 @@ export class FavoriteServices {
       hotelId,
       userId: user.id,
     });
-    if (!favorite) throw new NotFoundException('favorite not found');
+    if (!favorite) throw new NotFoundException('hotel not found on favorite');
     await this.favoriteRepo.delete({ id: favorite.id });
     return { message: 'favorite removed successfully' };
   };

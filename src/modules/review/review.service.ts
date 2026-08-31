@@ -29,7 +29,17 @@ export class ReviewServices {
   };
   getReview = async (reviewId: number) => {
     if (!reviewId) throw new BadRequestException('review id is required');
-    const review = await this.reviewRepo.findOne({ id: reviewId }, {});
+    const review = await this.reviewRepo.findOne(
+      { id: reviewId },
+      {
+        select: {
+          user: { select: { name: true, id: true } },
+          rating: true,
+          comment: true,
+          id: true,
+        },
+      },
+    );
     if (!review) throw new NotFoundException('review not found');
     return { message: 'review rev successfully', data: review };
   };
@@ -45,7 +55,17 @@ export class ReviewServices {
       {
         hotelId,
       },
-      { take: limit, skip: offset },
+      {
+        select: {
+          user: { select: { name: true, id: true } },
+          rating: true,
+          comment: true,
+          id: true,
+        },
+        orderBy: [{ createdAt: 'desc' }],
+        take: limit,
+        skip: offset,
+      },
     );
     return { message: 'review created successfully', data: review };
   };

@@ -14,6 +14,7 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiExcludeEndpoint,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -128,7 +129,14 @@ export class PaymentController {
   ) {
     return await this.paymentService.refund(bookingId, amount);
   }
-  @Post('stripe')
+
+  @ApiExcludeEndpoint()
+  @Post('webhook')
+  @ApiOperation({ summary: 'Stripe webhook endpoint' })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhook processed successfully',
+  })
   async stripeWebhook(@Req() req: RawBodyRequest<Request>) {
     return await this.paymentService.webhook(req);
   }

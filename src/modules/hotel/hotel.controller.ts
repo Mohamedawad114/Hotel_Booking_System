@@ -7,7 +7,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { HotelServices } from './hotel.service';
-// import { SearchHotelsQueryDto } from './Dto/search.dto';
 import { Auth } from 'src/common/decorator';
 import { Sys_Role } from 'src/common/enums';
 

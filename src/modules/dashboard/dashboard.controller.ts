@@ -59,7 +59,7 @@ export class DashboardController {
   getAllBookings(@Query() dto: GetBookingsDto) {
     return this.dashboardBookingService.getAllBookings(dto);
   }
-  @Get()
+  @Get("users")
   @ApiOperation({
     summary: 'Get all users with optional search and city filter',
   })
@@ -73,13 +73,13 @@ export class DashboardController {
     return this.dashboardUserService.getAllUsers(search, city, page, pageSize);
   }
 
-  @Get(':id')
+  @Get('users/:id')
   @ApiOperation({ summary: 'Get user details' })
   getUserDetails(@Param('id', ParseIntPipe) id: number) {
     return this.dashboardUserService.getUserDetails(id);
   }
 
-  @Patch(':id/ban')
+  @Patch('users/:id/ban')
   @ApiOperation({ summary: 'Ban or unban a user' })
   banUser(
     @Param('id', ParseIntPipe) id: number,
