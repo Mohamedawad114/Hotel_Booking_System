@@ -5,6 +5,8 @@ export * from './Jobs/email/email.module';
 export * from './Jobs/email/email.producer';
 export * from './Jobs/webhook/webhook.job.module';
 export * from './Jobs/webhook/webhook.job.producer';
+export * from './Jobs/cancellation/cancellation.job.module';
+export * from './Jobs/cancellation/cancellation.job.producer';
 export * from './2FA.service';
 export * from './hotel provider/provider.module';
 export * from './hotel provider/provider.service';

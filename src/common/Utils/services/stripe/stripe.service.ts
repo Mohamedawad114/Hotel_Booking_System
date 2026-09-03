@@ -8,10 +8,13 @@ import { IUser } from 'src/common/interfaces';
 import { StripeInput } from 'src/modules/payment/Dto/stripeInput.dto';
 import Stripe from 'stripe';
 import { Request } from 'express';
+import { PinoLogger } from 'nestjs-pino';
 @Injectable()
 export class StripeServices {
   private readonly stripe: Stripe;
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService,
+    private readonly logger:PinoLogger
+  ) {
     this.stripe = new Stripe(
       this.configService.getOrThrow<string>('STRIPE_SECRET'),
     );
@@ -79,8 +82,8 @@ export class StripeServices {
       );
       return event;
     } catch (err: any) {
-      console.error('❌ STRIPE WEBHOOK ERROR:', err.message);
-      console.error(err);
+      this.logger.error('❌ STRIPE WEBHOOK ERROR:', err.message);
+      this.logger.error(err);
       throw new BadRequestException(`Webhook Error: ${err.message}`);
     }
   }

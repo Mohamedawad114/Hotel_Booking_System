@@ -89,6 +89,7 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+  CANCELLATION_PROCESSING
 }
 
 enum PaymentType {

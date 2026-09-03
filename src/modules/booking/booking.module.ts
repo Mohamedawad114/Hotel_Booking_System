@@ -1,7 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { BookingController } from './booking.controller';
-import { BookingRepository, EmailModule, HotelRepository } from 'src/common';
+import {
+  BookingRepository,
+  CancellationModule,
+  EmailModule,
+  HotelRepository,
+} from 'src/common';
 import { ConfirmBookingHandler } from './events/handler/confirmBooking.event.handler';
 import { GetBookingsHandler } from './queries/handlers/getBookings.handler';
 import { GetBookingDetailsHandler } from './queries/handlers/getBookingDetail.handler';
@@ -23,6 +28,7 @@ import { BookingService } from './booking.service';
     NotificationModule,
     PaymentModule,
     GatewayModule,
+    CancellationModule,
   ],
   controllers: [BookingController],
   providers: [
@@ -36,7 +42,8 @@ import { BookingService } from './booking.service';
     HotelRepository,
     BookingResolver,
     CancelBookingHandler,
-    BookingService
+    BookingService,
   ],
+
 })
 export class BookingModule {}

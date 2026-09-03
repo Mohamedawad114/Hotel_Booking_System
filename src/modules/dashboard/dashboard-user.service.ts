@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { emailType } from 'src/common/enums';
-import { EmailProducer, redis, redisKeys, UserRepository } from 'src/common';
+import { CryptoService, EmailProducer, redis, redisKeys, UserRepository } from 'src/common';
 
 @Injectable()
 export class DashboardUserService {
   constructor(
     private readonly userRepo: UserRepository,
     private readonly emailQueue: EmailProducer,
+    private readonly cryptoService: CryptoService,
   ) {}
   async getAllUsers(search?: string, city?: string, page = 1, pageSize = 20) {
     const value = search?.trim();
@@ -46,7 +47,8 @@ export class DashboardUserService {
       omit: { password: true, secret: true, BackupCodes: true },
     });
     if (!user) throw new NotFoundException('user not found');
-    return { message: 'user details', data: user };
+    const userData = { ...user, phone: this.cryptoService.decryption(user.phone) };
+    return { message: 'user details', data: userData };
   }
 
   async banUser(id: number, isBanned: boolean) {

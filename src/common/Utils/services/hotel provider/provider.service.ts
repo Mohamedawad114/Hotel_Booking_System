@@ -18,7 +18,6 @@ import {
 import { BookingInput } from 'src/modules/booking/dto/booking.dto';
 import { SearchAvailabilityDto } from 'src/modules/booking/dto/checkAvailability.dto';
 import axios, { AxiosError } from 'axios';
-import { AnyARecord } from 'dns';
 @Injectable()
 export class HotelbedsProvider implements IProviderService, OnModuleInit {
   private readonly apiKey: string;
@@ -281,7 +280,6 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
   async checkRates(rateKeys: string[]) {
     try {
       const payload = { rooms: rateKeys.map((rateKey) => ({ rateKey })) };
-
       const response = await firstValueFrom(
         this.httpService.post('/hotel-api/1.0/checkrates', payload),
       );
@@ -365,7 +363,12 @@ export class HotelbedsProvider implements IProviderService, OnModuleInit {
       return data;
     } catch (error: any) {
       if (axios.isAxiosError(error)) {
-        console.error(
+        throw new BadRequestException(
+          error.response?.data || 'Hotelbeds Booking Failed',
+        );
+      }
+      if (axios.isAxiosError(error)) {
+        this.logger.error(
           'Hotelbeds Error Detail:',
           JSON.stringify(error.response?.data, null, 2),
         );

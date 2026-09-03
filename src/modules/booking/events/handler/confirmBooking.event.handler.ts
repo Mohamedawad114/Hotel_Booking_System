@@ -51,7 +51,7 @@ export class ConfirmBookingHandler implements IEventHandler<ConfirmBookingEvent>
     );
 
     await this.emailQueue.sendEmailJob(emailType.createdBooking, user.email, {
-      username: user.name,
+      name: user.name,
       ...booking,
       hotelName: hotel.name,
     });

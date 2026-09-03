@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { BookingRepository, EmailModule, UserRepository } from 'src/common';
+import { BookingRepository, CryptoService, EmailModule, UserRepository } from 'src/common';
 import { DashboardUserService } from './dashboard-user.service';
 import { DashboardController } from './dashboard.controller';
 import { DashboardBookingService } from './dashboard-booking.service';
@@ -16,6 +16,7 @@ import { PaymentRepository } from 'src/common';
     UserRepository,
     BookingRepository,
     PaymentRepository,
+    CryptoService
   ],
 })
 export class DashboardModule {}

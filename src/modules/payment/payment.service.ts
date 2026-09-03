@@ -5,31 +5,27 @@ import {
   RawBodyRequest,
 } from '@nestjs/common';
 import { BookingStatus, paymentStatus } from '@prisma/client';
-import {
-  BookingRepository,
-  PaymentRepository,
-  StripeServices,
-  UserRepository,
-  WebhookProducer,
-} from 'src/common';
 import { PaymentGateway } from 'src/common/enums/paymentGateway.enums';
 import { IUser } from 'src/common/interfaces';
 import { PaymentGatewayFactory } from './payment.factory';
 import { PaymentInput } from './Dto/paymentInput.dto';
 import { Request } from 'express';
 import type { PaymentIntent } from 'stripe';
-import { ConfigService } from '@nestjs/config';
+import { BookingRepository } from 'src/common/repositories/prisma repositories/booking.repository';
+import { WebhookProducer } from 'src/common/Utils/services/Jobs/webhook/webhook.job.producer';
+import { UserRepository } from 'src/common/repositories/prisma repositories/user.repository';
+import { PaymentRepository } from 'src/common/repositories/prisma repositories/payment.repository';
+import { StripeServices } from 'src/common/Utils/services/stripe/stripe.service';
 
 @Injectable()
 export class PaymentService {
   constructor(
     private readonly bookingRepo: BookingRepository,
-    private readonly PaymentService: PaymentGatewayFactory,
+    private readonly paymentGatewayFactory: PaymentGatewayFactory,
     private readonly userRepo: UserRepository,
     private readonly paymentRepo: PaymentRepository,
     private readonly stripeService: StripeServices,
     private readonly webhookQueue: WebhookProducer,
-    private readonly configService: ConfigService,
   ) {}
 
   getPaymentGateway() {
@@ -44,7 +40,7 @@ export class PaymentService {
       status: BookingStatus.PENDING,
     });
     if (!booking) throw new NotFoundException('booking not found or confirmed');
-    const paymentGateway = this.PaymentService.getGateway(data.gateway);
+    const paymentGateway = this.paymentGatewayFactory.getGateway(data.gateway);
     let customerId = user.customer_id;
     if (!customerId && typeof paymentGateway.createCustomerId === 'function') {
       customerId = await paymentGateway.createCustomerId(user);
@@ -127,7 +123,7 @@ export class PaymentService {
         'No payment reference (paymentId) attached to this booking',
       );
     }
-    const paymentGateway = this.PaymentService.getGateway(
+    const paymentGateway = this.paymentGatewayFactory.getGateway(
       booking.payment.gateway,
     );
     const refundResult = await paymentGateway.refund(

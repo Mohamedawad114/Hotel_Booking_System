@@ -85,6 +85,7 @@ model booking {
   refundAmount          Int?
   cancellationFees      Int?
   cancellationReference String?
+  cancellationReason    String?
   paymentType           PaymentType
   rooms                 bookingRoom[]
   payment               payment?
@@ -252,6 +253,7 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+  CANCELLATION_PROCESSING
 }
 
 enum PaymentType {

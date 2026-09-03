@@ -86,7 +86,6 @@ export class BookingHandler implements ICommandHandler<BookingCommand> {
         childrenCount: s.children,
         guests: dto.rooms[i].guests,
       }));
-
       const booking = await this.providerServices.confirmBooking(
         hotelCode,
         bookingNumber,

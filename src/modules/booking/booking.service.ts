@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { BookingStatus, paymentStatus } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { BookingRepository, HotelbedsProvider } from 'src/common';
@@ -6,7 +6,9 @@ import { BookingRepository, HotelbedsProvider } from 'src/common';
 @Injectable()
 export class BookingService {
   constructor(
+    @Inject(forwardRef(() => HotelbedsProvider))
     private readonly providerService: HotelbedsProvider,
+    @Inject(forwardRef(() => BookingRepository))
     private readonly bookingRepo: BookingRepository,
     private readonly logger: PinoLogger,
   ) {}

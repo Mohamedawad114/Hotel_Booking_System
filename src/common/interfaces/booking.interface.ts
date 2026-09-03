@@ -47,3 +47,10 @@ export interface ICancelBookingData {
   refundAmount: number;
   cancellationFee: number;
 }
+export interface CancelBookingJobData {
+  userId: number;
+  bookingId: number;
+  reason?: string;
+  paymentType: PaymentType;
+  providerReference?: string;
+}
