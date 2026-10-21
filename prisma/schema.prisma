@@ -108,7 +108,6 @@ model bookingRoom {
   adultsCount   Int
   childrenCount Int
   createdAt     DateTime @default(now())
-
   @@index([bookingId, roomCode, hotelId])
 }
 

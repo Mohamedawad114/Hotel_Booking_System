@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/common/prisma/prisma.service';
 
-@Injectable()
 export abstract class BaseRepository<
   Model extends ModelDelegate,
   CreateDto,
