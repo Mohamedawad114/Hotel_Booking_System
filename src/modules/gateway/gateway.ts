@@ -19,6 +19,7 @@ import {
 } from 'src/common';
 import { NotificationTitle, Sys_Role } from 'src/common/enums';
 import { NotificationService } from '../notification/notification.service';
+import { MetricsServices } from 'src/common/metrics/metrics.service';
 
 @Injectable()
 @WebSocketGateway({ namespace: `public`, cors: { origin: '*' } })
@@ -36,6 +37,7 @@ export class Gateway
     private readonly logger: PinoLogger,
     private readonly tokenService: TokenServices,
     private readonly userRepo: UserRepository,
+    private readonly metricsService: MetricsServices,
   ) {}
 
   afterInit(server: Server) {
@@ -61,11 +63,13 @@ export class Gateway
       await redis.sadd(redisKeys.admins(), user.id);
     }
     await redis.sadd(redisKeys.socketKey(user.id), client.id);
+    this.metricsService.onWsConnection();
     this.logger.info(`Client connected: ${client.id}`);
   }
   async handleDisconnect(client: Socket) {
     const user = client.data.user;
     await redis.srem(redisKeys.socketKey(user.id), client.id);
+    this.metricsService.onWsDisconnection();
     this.logger.info(`Client disconnected: ${client.id}`);
   }
   async sendNotification(
@@ -115,7 +119,7 @@ export class Gateway
     });
   }
   async onModuleInit() {
-    const subscriber = redisSub.duplicate()
+    const subscriber = redisSub.duplicate();
     await subscriber.subscribe('bookingConfirmed');
     subscriber.on('message', async (channel, message) => {
       if (channel !== 'bookingConfirmed') return;

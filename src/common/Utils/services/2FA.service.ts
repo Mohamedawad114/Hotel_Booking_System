@@ -33,7 +33,7 @@ export class TwoFAService {
   generateBackupCodes = async () => {
     const backupCodes: string[] = [];
     for (let i = 0; i < 10; i++) {
-      const code = randomBytes(8).toString('hex').toUpperCase(); 
+      const code = randomBytes(8).toString('hex').toUpperCase();
       backupCodes.push(code);
     }
     const hashedCodes = await Promise.all(

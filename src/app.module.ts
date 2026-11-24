@@ -9,11 +9,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { CommonModule, PrismaModule, redis } from './common';
 import { LoggerModule } from 'nestjs-pino';
 import { GlobalErrFilter } from './common/guards';
-import {
-  LoggingInterceptor,
-  ResponseInterceptor,
-  TimeoutInterceptor,
-} from './common/interceptors';
+import { ResponseInterceptor, TimeoutInterceptor } from './common/interceptors';
 import {
   AuthModule,
   DestinationModule,
@@ -34,6 +30,7 @@ import { ExpressAdapter } from '@bull-board/express';
 import { BookingModule } from './modules/booking/booking.module';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { MetricsModule } from './common/metrics/metrics.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -72,6 +69,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
       driver: ApolloDriver,
       context: ({ res, req }) => ({ req, res }),
     }),
+    MetricsModule,
     PrismaModule,
     CommonModule,
     AuthModule,
@@ -102,10 +100,6 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
     {
       provide: 'APP_INTERCEPTOR',
       useClass: ResponseInterceptor,
-    },
-    {
-      provide: 'APP_INTERCEPTOR',
-      useClass: LoggingInterceptor,
     },
     {
       provide: 'APP_PIPE',

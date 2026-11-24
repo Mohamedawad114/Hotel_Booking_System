@@ -5,20 +5,25 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
+import { Request } from 'express';
 import { map, Observable } from 'rxjs';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  constructor() {}
   intercept(
     context: ExecutionContext,
     next: CallHandler<any>,
   ): Observable<any> | Promise<Observable<any>> {
     const gqlCtx = GqlExecutionContext.create(context);
-    const isGraphQL = gqlCtx.getType() === 'graphql';
-    if (isGraphQL) {
+    if (gqlCtx.getType() === 'graphql') {
       return next.handle();
     }
+
+    const req = context.switchToHttp().getRequest<Request>();
+    if (req.url?.includes('metrics')) {
+      return next.handle();
+    }
+
     const res = context.switchToHttp().getResponse();
     return next.handle().pipe(
       map((data) => {
