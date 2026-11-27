@@ -7,6 +7,7 @@ import { BookingService } from 'src/modules/booking/booking.service';
 import { EmailProducer } from '../email/email.producer';
 import { emailType, NotificationTitle } from 'src/common/enums';
 import { NotificationService } from 'src/modules/notification/notification.service';
+import { MetricsServices } from 'src/common/metrics/metrics.service';
 
 @Processor('booking')
 export class BookingJobProcessor extends WorkerHost {
@@ -16,6 +17,7 @@ export class BookingJobProcessor extends WorkerHost {
     private readonly logger: PinoLogger,
     private readonly emailQueue: EmailProducer,
     private readonly notificationService: NotificationService,
+    private readonly metricsService: MetricsServices,
   ) {
     super();
   }
@@ -42,6 +44,7 @@ export class BookingJobProcessor extends WorkerHost {
       booking.providerReference,
       paymentId,
     );
+    this.metricsService.onBookingCreated(BookingStatus.CANCELLED);
     await this.notificationService.createNotification(
       user.id,
       NotificationTitle.canceledBooking,

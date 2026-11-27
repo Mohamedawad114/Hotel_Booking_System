@@ -1,12 +1,13 @@
-import { OnWorkerEvent, Processor, WorkerHost } from "@nestjs/bullmq";
-import { EventBus } from "@nestjs/cqrs";
-import { BookingStatus, paymentStatus, PaymentType } from "@prisma/client";
-import { Job } from "bullmq";
-import { PinoLogger } from "nestjs-pino";
-import { BookingRepository } from "src/common/repositories/prisma repositories";
-import { CancelBookingEvent } from "src/modules/booking/events/cancelBooking.event";
-import { BookingService } from "src/modules/booking/booking.service";
-import { HotelbedsProvider } from "../../hotel provider/provider.service";
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
+import { EventBus } from '@nestjs/cqrs';
+import { BookingStatus, paymentStatus, PaymentType } from '@prisma/client';
+import { Job } from 'bullmq';
+import { PinoLogger } from 'nestjs-pino';
+import { BookingRepository } from 'src/common/repositories/prisma repositories';
+import { CancelBookingEvent } from 'src/modules/booking/events/cancelBooking.event';
+import { BookingService } from 'src/modules/booking/booking.service';
+import { HotelbedsProvider } from '../../hotel provider/provider.service';
+import { MetricsServices } from 'src/common/metrics/metrics.service';
 
 @Processor('cancellation')
 export class CancellationProcessor extends WorkerHost {
@@ -16,6 +17,7 @@ export class CancellationProcessor extends WorkerHost {
     private readonly bookingService: BookingService,
     private readonly eventBus: EventBus,
     private readonly logger: PinoLogger,
+    private readonly metricsService: MetricsServices,
   ) {
     super();
   }
@@ -60,6 +62,7 @@ export class CancellationProcessor extends WorkerHost {
             },
           },
         );
+        this.metricsService.onBookingCreated(BookingStatus.CANCELLED);
         await this.eventBus.publish(
           new CancelBookingEvent(
             booking.user,

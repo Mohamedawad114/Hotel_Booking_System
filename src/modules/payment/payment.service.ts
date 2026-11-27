@@ -16,6 +16,7 @@ import { WebhookProducer } from 'src/common/Utils/services/Jobs/webhook/webhook.
 import { UserRepository } from 'src/common/repositories/prisma repositories/user.repository';
 import { PaymentRepository } from 'src/common/repositories/prisma repositories/payment.repository';
 import { StripeServices } from 'src/common/Utils/services/stripe/stripe.service';
+import { MetricsServices } from 'src/common/metrics/metrics.service';
 
 @Injectable()
 export class PaymentService {
@@ -26,6 +27,7 @@ export class PaymentService {
     private readonly paymentRepo: PaymentRepository,
     private readonly stripeService: StripeServices,
     private readonly webhookQueue: WebhookProducer,
+    private readonly metricsService: MetricsServices,
   ) {}
 
   getPaymentGateway() {
@@ -162,6 +164,7 @@ export class PaymentService {
           },
         },
       );
+      this.metricsService.onBookingCreated(BookingStatus.CONFIRMED);
       await this.webhookQueue.addWebhookJob(
         Number(bookingId),
         Number(metadata.userId),

@@ -27,16 +27,20 @@ import { LoggingInterceptor } from '../interceptors';
       help: 'Total number of HTTP requests',
       labelNames: ['method', 'path', 'status'],
     }),
+    makeCounterProvider({
+      name: names.booking_counter,
+      help: 'Total number of bookings',
+      labelNames: ['booking_status'],
+    }),
     makeHistogramProvider({
       name: names.histogram,
-      help: 'Total number of HTTP requests',
+      help: 'Histogram of HTTP request durations',
       labelNames: ['method', 'path', 'status'],
       buckets: [0.05, 0.1, 0.5, 1, 2, 5],
     }),
     makeGaugeProvider({
       name: names.gauge,
-      help: 'Current number of HTTP requests',
-      labelNames: ['method', 'path', 'status'],
+      help: ' Gauge for WebSocket connections',
     }),
     {
       provide: 'APP_INTERCEPTOR',
